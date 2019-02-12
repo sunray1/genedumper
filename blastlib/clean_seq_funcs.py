@@ -10,6 +10,7 @@ muscle_cline = MuscleCommandline(clwstrict=True)
 Entrez.email = "sunray1@ufl.edu"
 
 def resolve_seqs(list_of_GIs):
+    time.sleep(.5)
     #give a list of GIs, checks the amount DNA/length, returns list of max
     joined_GIs = ",".join(list_of_GIs)
     amount_DNA = []
@@ -37,6 +38,7 @@ def resolve_seqs(list_of_GIs):
     return(GI_to_pick)
 
 def alignment_reg(align_GIs):
+    time.sleep(.5)
     joined_GIs = ",".join(align_GIs)
     error = True
     while error == True:
