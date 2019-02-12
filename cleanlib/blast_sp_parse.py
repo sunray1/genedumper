@@ -19,17 +19,17 @@ def test_resolved_seqs(infile, blastdb, taxdb):
         print("Blasting " + infile)
         records = fasta_file.read()
     numqueries = records.count('>')
-    error = True
-    while error == True:    
-        try:
-            result_handle = NCBIWWW.qblast("blastn", "nt", records, entrez_query='((Papilionoidea[Organism]) OR Hedylidae[Organism]) OR Hesperiidae[Organism]', word_size=28, hitlist_size=100)
-            error = False
-        except:
-            error = True
-    #get rid of this extra step of printing xml using NCBIXML
-    with open(infile+".xml", "w") as save_file:
-        save_file.write(result_handle.read())
-        result_handle.close()
+    # error = True
+    # while error == True:    
+    #     try:
+    #         result_handle = NCBIWWW.qblast("blastn", "nt", records, entrez_query='((Papilionoidea[Organism]) OR Hedylidae[Organism]) OR Hesperiidae[Organism]', word_size=28, hitlist_size=100)
+    #         error = False
+    #     except:
+    #         error = True
+    # #get rid of this extra step of printing xml using NCBIXML
+    # with open(infile+".xml", "w") as save_file:
+    #     save_file.write(result_handle.read())
+    #     result_handle.close()
     #open self blast file for parsing
     #make dictionary of query species: query GI of those that don't have the top hit as the same species
     
@@ -49,10 +49,12 @@ def test_resolved_seqs(infile, blastdb, taxdb):
             for alignment in rec.alignments:
                 for hsp in alignment.hsps:
                     identity=float(hsp.identities)/float(hsp.align_length)
+                    print(identity)
                 if alignment.title.split("|")[1] == queryGI:
                     pass
                 else:
                     hitdic[str(alignment.title.split("|")[1])] = identity
+            print(hitdic)
             maxiden = max(hitdic.values())
             hitGIs = [GI for GI, iden in hitdic.iteritems() if iden == maxiden]
             for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + queryGI + "'"):

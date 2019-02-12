@@ -62,12 +62,14 @@ def resolve_seqs(blastdb):
             dic_COI[i.split("|")[0]] = [i.split("|")[1]]
         genes.add(re.split('_|\|', i)[1])
    
-    count = 0
+    countall = 0
     #deal with lengths of COI and add to dic to try and resolve
     print("Trying to resolve COI/COII sequences")
     for i in dic_COI:
-        count += 1
-        print(str(round(float(count)/float(len(dic_COI))*100, 2))+'%')
+        countall += 1
+        print(i)
+        print(countall)
+        print(str(round(float(countall)/float(len(dic_COI))*100, 2))+'%')
         lengths = [int(m.split('_')[1]) for m in dic_COI[i]]
         individual = [dic_COI[i][x] for x, l in enumerate(lengths) if l < 2000]
         whole = [dic_COI[i][x] for x, l in enumerate(lengths) if l > 2000 and l < 3000]
