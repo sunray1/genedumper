@@ -8,7 +8,7 @@
 
 # Second the epithets are used to search for all Species with the same epithet. If this returned list
 # contains species with the same tc_id and there is only one valid name in the list, the Species for
-# all the blast hits containing the previous name are changed.
+# all the blast hits containing the previous name are changed. EDIT - no, there are instances where epithets match but species are not related
 
 # Changes are noted in 'epithet.txt'
 def epithet(taxdb, blastdb):
@@ -50,21 +50,21 @@ def epithet(taxdb, blastdb):
 						c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
 						o.write('Subspecies\t' + genus + ' ' + name +'\t' + str(name_num_dic[key]).replace("'", "").strip("[").strip("]") + '\t' + organism + '\n')
 						update = True
-#					Searches species
-					else:
-						for iter in c.execute("SELECT tc.tc_id, n.namestr, ntt.validity FROM names n, names_to_taxonconcepts ntt, taxon_concepts tc, ranks r WHERE n.namestr LIKE '% " + name + "' and n.name_id = ntt.name_id and ntt.tc_id = tc.tc_id and tc.rank_id=r.rank_id and r.namestr = 'Species';"):
-							tc_id.append(iter[0])
-							species.append(iter[1])
-							validity.append(iter[2])
-#							have to make set because sometimes there are duplicates in valids and syns - need to talk to Vijay about this
-						tc_id = set(tc_id)
-						if len(tc_id) == 1 and validity.count('valid') == 1:
-							organism = species[validity.index('valid')]
-							c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
-							c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
-							c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
-							o.write('Species\t' + genus + ' ' + name + '\t' + str(name_num_dic[key]).replace("'", "").strip("[").strip("]") + '\t' + organism + '\n')
-							update = True
+#					Searches species - no, there are plenty of instances where epithets match but are different species
+# 					else:
+# 						for iter in c.execute("SELECT tc.tc_id, n.namestr, ntt.validity FROM names n, names_to_taxonconcepts ntt, taxon_concepts tc, ranks r WHERE n.namestr LIKE '% " + name + "' and n.name_id = ntt.name_id and ntt.tc_id = tc.tc_id and tc.rank_id=r.rank_id and r.namestr = 'Species';"):
+# 							tc_id.append(iter[0])
+# 							species.append(iter[1])
+# 							validity.append(iter[2])
+# #							have to make set because sometimes there are duplicates in valids and syns - need to talk to Vijay about this
+# 						tc_id = set(tc_id)
+# 						if len(tc_id) == 1 and validity.count('valid') == 1:
+# 							organism = species[validity.index('valid')]
+# 							c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
+# 							c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
+# 							c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
+# 							o.write('Species\t' + genus + ' ' + name + '\t' + str(name_num_dic[key]).replace("'", "").strip("[").strip("]") + '\t' + organism + '\n')
+# 							update = True
 				elif num != name_num_dic[key][0] and update == True:
 					c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
 					c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
