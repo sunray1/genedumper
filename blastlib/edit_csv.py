@@ -28,7 +28,6 @@ class edit():
 		hits = root.find('BlastOutput_iterations/Iteration/Iteration_hits')
 		row = {}
 		for hit in hits:
-			print(hit)
 			# Get the sequence information.
 			idstr = hit.find('Hit_id').text
 			idelems = idstr.split('|')
@@ -112,7 +111,9 @@ def pull_names(defstr):
 	definition = defstr
 	# sometimes definitions have Lepidoptera sp. at the beginning and the species names are later - this parses these out
 	# not generalized
+	lepcount = 0
 	while "Lepidoptera" in species:
+		lepcount += 1
 		try:
 			defsplit = definition.split(">", 1)[-1]
 			def2 = defsplit.split(' ', 1)[1]
@@ -121,6 +122,9 @@ def pull_names(defstr):
 			definition = defsplit
 		except:
 			species = "Unknown species"
+		if lepcount == 50:
+			species = "Unknown species"
+			break
 	# some more non generalized parsing - Burns and Robbins name things different from everything else
 	if "sp." in species and "DHJ0" in defin[2] and "Burns0" not in defin[2] and "Robbins0" not in defin[2]:
 		species = defin[0]+" "+defin[2].split("DHJ0")[0]
