@@ -105,6 +105,11 @@ def pull_names(defstr):
 	# sometimes definitions look like 'PREDICTED: Genus Species'
 	if defin[0] == "PREDICTED:":
 		species = "Unknown Species"
+	elif defin[0] != "PREDICTED:" and "." not in defin[0]:
+		species = " ".join(defin[0:2])
+	elif defin[0] != "PREDICTED:" and "." in defin[0]:
+		species = defin[0].split(".")[0] + " " + defin[0].split(".")[1]
+	definition = defstr
 	# sometimes definitions have Lepidoptera sp. at the beginning and the species names are later - this parses these out
 	# not generalized
 	while "Lepidoptera" in species:
