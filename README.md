@@ -37,7 +37,7 @@ Enter ".help" for usage hints.
 sqlite>
 ```
 ```
-$python
+$ python
 Python 2.7.12 (default, Nov 19 2016, 06:48:10)
 [GCC 5.4.0 20160609] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
@@ -162,4 +162,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* Step in CSV to SQL step of GeneDump forked from [Rufus Pollock](https://github.com/rufuspollock/csv2sqlite). Many thanks!
+* Step in CSV to SQL step of GeneDump edited from [Rufus Pollock](https://github.com/rufuspollock/csv2sqlite). Many thanks!
+* Thanks to those who let us use their data for testing! - Maria Cortez, Ryan Folk, ButterflyNet
