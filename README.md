@@ -127,6 +127,8 @@ $ python GeneDump.py -b output_blast.db -t input_taxonomy.db -f FASTA_file -s 01
 ```
 Alternatively to run all steps, the -s arguement can be ignored as the script runs all steps by default.
 
+Steps 4-6 are not necessary, but can be useful if the user wants to try and resolve names that are lableled or spelled incorrectly. Step 4 will double check NCBI for species names, step 5 will check for species that have been labeled as subspecies and step 6 will attempt to check for spelling errors.
+
 The -c option allows the user to produce a presence/absense matrix depicting what was found in the initial blast. This is usually at the Species level, but other levels can be specified instead (Genus, Family, etc.).
 
 
@@ -142,8 +144,22 @@ $ python GeneClean.py -b blast_db -t taxonomy_db
 ```
 
 ## Outputs
+### Taxonomy database formation
 
-ouputs and files made from each step
+The output of this step is simply a SQL database containing your taxonomy.
+
+### Initial BLAST and SQL database formation
+There are six main outputs from this section if all steps are run.
+1. .xml files for each of your loci from step 0. These files are the initial BLAST results.
+2. .csv files for each of your loci from step 1. These files are the .csv version of the .xml files described above and can be used to see if your BLAST search is finding particular sequences. 
+3. ncbi.txt is a tab delimited file containing all the changes made by step 4. The first column is what the species was originally, the second column is which sequences the changes were made in and the third column is what the species was changed to.
+4. epithet.txt is a tab delimited file containing all the changes made by step 5. The first column is what the species was originally, the second column is which sequences the changes were made in and the third column is what the species was changed to.
+5. spell.txt is a tab delimited file containing all the changes made by step 6. The first column is what the species was originally, the second column is which sequences the changes were made in and the third column is what the species was changed to. The fourth column is used to specify if the script actually changed the names or if it wasn't sure and needs a decision to be made by the user. These will be labeled 'hand' or 'multiple' if there were multiple guesses. 
+6. The last and most important output file is the database made by the BLAST search. If all steps are run, this will be be complete with names resolved.
+7. [optional] If -c is run, a presence/absense matrix will be created. 
+### Taxonomy database formation
+Outputs of 3rd section here*
+
 
 ## Versioning
 #### July 2019: Version 0.8.0
