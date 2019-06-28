@@ -59,10 +59,10 @@ taxonomyid, taxonomyname, ismaster = taxoconfig.getTaxonomySettings()
 taxonomy = Taxonomy(taxonomyid, taxonomyname, ismaster, citation, taxonomyroot)
 print(taxonomyid, taxonomyname, taxonomyroot)
 # Make sure that the Taxonomy is linked to the MOL backbone taxonomy.
-print '\nLinking taxonomy to the MOL backbone taxonomy...'
-if not(taxonomy.linkToBackbone(pgcur)):
-    exit('\nError:\n  Unable to link the taxonomy to the MOL backbone taxonomy.\n')
-print 'done.'
+#print '\nLinking taxonomy to the MOL backbone taxonomy...'
+#if not(taxonomy.linkToBackbone(pgcur)):
+#    exit('\nError:\n  Unable to link the taxonomy to the MOL backbone taxonomy.\n')
+#print 'done.'
 #taxonomy.getBackboneTaxonomy().printAll()
 
 useres = args.resolvers
