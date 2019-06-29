@@ -17,7 +17,7 @@ def get_stats(taxonomy, blastfile, level):
 #first get list of every valid name and tc_id in that level
 #need to make not case-sensitive
 	for iter in c.execute("SELECT n.namestr, tc.tc_id FROM names n JOIN names_to_taxonconcepts ntt ON ntt.name_id = n.name_id JOIN taxon_concepts tc ON tc.tc_id = ntt.tc_id JOIN ranks r ON r.rank_id = tc.rank_id WHERE r.namestr = '" + level + "' AND ntt.validity='valid' GROUP BY n.namestr;"):
-		ranks.append(iter[0])
+		ranks.append(iter[0].encode('utf-8'))
 		tc_id.append(iter[1])
 	#make dic with tc_ids and gene amounts in blast
 	for iter in c.execute("SELECT tc_id, Gene_name FROM blast WHERE tc_id NOT NULL GROUP BY tc_id, Gene_name"):

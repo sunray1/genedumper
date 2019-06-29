@@ -95,12 +95,13 @@ class edit():
 #referenced in above function
 def pull_names(defstr):
 	# a lot of this is not generalized - need to figure out a way to change this
-	removelist = ["cf.", "nr.", "aff.", "hybrid", "form", "n."]
+	removelist = ["cf.", "nr.", "aff.", "hybrid", "form", "n.", "Cf.", "x", "X"]
 	# changes items in removelist to 'sp.' if in blast definition
 	defin = defstr.split()
 	for x in removelist:
 		if x in defin:
 			defin[defin.index(x)] = "sp."
+			
 	# sometimes definitions look like 'PREDICTED: Genus Species'
 	if defin[0] == "PREDICTED:":
 		species = "Unknown Species"
@@ -137,8 +138,13 @@ def pull_names(defstr):
 	if "BioLep" in defin[0]:
 		species = defin[0][:-8] + " " + defin[1]
 
-	genus = species.split()[0].replace("'", "")
-	epithet = species.split()[1].replace("'", "")
+	try:
+		genus = species.split()[0].replace("'", "")
+		epithet = species.split()[1].replace("'", "")
+	except:
+		species = "Unknown species"
+		genus = species.split()[0].replace("'", "")
+		epithet = species.split()[1].replace("'", "")		
 	species = species.replace("'", "")
 	return(species, genus, epithet)
 
