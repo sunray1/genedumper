@@ -61,13 +61,17 @@ $ git clone https://github.com/sunray1/GeneDumper.git
 
 ### Taxonomy database formation
 
-The goal of the first step is to get your taxonomy for your taxa of interest into a SQL database. This can be done using a given taxonomy (in .csv format) or the software can infer the taxonomy for you based on NCBI's taxonomy. 
+The goal of the first step is to get your taxonomy for your taxa of interest into a SQL database. This can be done using a given taxonomy (in .csv format) or we have provided an R script that can infer the taxonomy for you based on NCBI's taxonomy. 
 
-If you need an inferred taxonomy given a list of species/synonyms:
+If you need an inferred taxonomy given a list of species/synonyms, you will need the R package [taxize](https://ropenscilabs.github.io/taxize-book/), which can be installed using :
 
 ```
-Give an example
+install.packages('taxize')
 ```
+
+Using the R script is straightforward, using your inputted list (I typically do this as a csv without a header with one species name on each line). The script uses NCBI's taxonomy as a reference and will ask for user input if there are multiple reference taxa found.
+
+The script only searches the genera of inputted species in order to save time. The outputted taxonomy is called 'Taxonomy.csv' and is formatted for direct input into the next step. 
 
 Once you have a taxonomy OR are providing one you need two other input files. Both of these files are included in the taxonomy_files folder.
 1. .config file (can edit the one that is included)
@@ -170,7 +174,7 @@ Initial Release
 * **Chandra Earl** - *Primary Author* - [Github](https://github.com/sunray1)
 * **Brian Stucky** - *Taxonomy databasing* - [Github](https://github.com/stuckyb)
 * **Rob Guralnick** - *Principal Investigator* - [Github](https://github.com/robgur)
-* **Akito Kawahara** - *Principal Investigator* - [Github]()
+* **Akito Kawahara** - *Principal Investigator* - [Github](https://github.com/cgstorer/KawaharaLab)
 
 ## License
 
