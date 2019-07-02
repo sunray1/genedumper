@@ -9,6 +9,7 @@ def ncbi(taxdb, blastdb):
 	from Bio import Entrez
 	Entrez.email = 'sunray1@ufl.edu'
 	num_spe_dic = {}
+	count = 1
 	conn = sqlite3.connect(taxdb)
 	c = conn.cursor()
 	c.execute("ATTACH '" + blastdb + "' as 'db'")
@@ -16,12 +17,11 @@ def ncbi(taxdb, blastdb):
 	for iter in c.execute("SELECT accession, Species FROM blast WHERE tc_id IS NULL;"):
 		num_spe_dic[str(iter[0])] = str(iter[1])
 	with open('ncbi.txt', 'w') as o:
-		ncbin = ",".join(num_spe_dic.keys())
-		chunksncbi = [ncbin[x:x+10000] for x in range(0, len(ncbin), 10000)]
+		chunksncbi = [num_spe_dic.keys()[x:x+10000] for x in range(0, len(num_spe_dic.keys()), 10000)]
 		print(len(chunksncbi))
-		count = 1
 		for chunk in chunksncbi:
 			print(count)
+			ncbin = ",".join(chunk)
 			handle = Entrez.efetch(db='nucleotide', id=ncbin, retmode='xml', seq_start=1, seq_stop=1)
 			print("parsing records")
 			records = Entrez.parse(handle)
