@@ -17,14 +17,22 @@ def ncbi(taxdb, blastdb):
 	for iter in c.execute("SELECT accession, Species FROM blast WHERE tc_id IS NULL;"):
 		num_spe_dic[str(iter[0])] = str(iter[1])
 	with open('ncbi.txt', 'w') as o:
-		chunksncbi = [num_spe_dic.keys()[x:x+10000] for x in range(0, len(num_spe_dic.keys()), 10000)]
+		chunksncbi = [num_spe_dic.keys()[x:x+5000] for x in range(0, len(num_spe_dic.keys()), 5000)]
 		print(len(chunksncbi))
 		for chunk in chunksncbi:
 			print(count)
 			ncbin = ",".join(chunk)
-			handle = Entrez.efetch(db='nucleotide', id=ncbin, retmode='xml', seq_start=1, seq_stop=1)
-			print("parsing records")
-			records = Entrez.parse(handle)
+			try:
+				handle = Entrez.efetch(db='nucleotide', id=ncbin, retmode='xml', seq_start=1, seq_stop=1)
+				print("parsing records")
+				records = Entrez.read(handle)
+				print("finished parsing")
+			except:
+				print("killed early, trying again")
+				handle = Entrez.efetch(db='nucleotide', id=ncbin, retmode='xml', seq_start=1, seq_stop=1)
+				print("parsing records")
+				records = Entrez.read(handle)
+				print("finished parsing")				
 			for r in records:
 				namefind = 'None'
 				num = r[u'GBSeq_accession-version']
@@ -32,8 +40,7 @@ def ncbi(taxdb, blastdb):
 				if num_spe_dic[num] == organism:
 					pass
 				else:
-			
-			#if the genbank name and original name are not the same AND the genbank name is in our list - change original name
+		#if the genbank name and original name are not the same AND the genbank name is in our list - change original name
 			#to genbank name in sqlite database
 					for iter in c.execute("SELECT namestr FROM names WHERE namestr = '" + organism + "';"):
 						namefind = iter[0]
@@ -43,7 +50,8 @@ def ncbi(taxdb, blastdb):
 					c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE accession='" + num + "';")
 					c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE accession='" + num + "';")
 					o.write(num_spe_dic[num] + '\t' + num + '\t' + organism + '\n')
-			handle.close()
-		count += 1
+				handle.close()
+			conn.commit()
+			count += 1
 	conn.commit()
 	conn.close()		
