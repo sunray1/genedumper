@@ -19,17 +19,17 @@ def test_resolved_seqs(infile, blastdb, taxdb):
         print("Blasting " + infile)
         records = fasta_file.read()
     numqueries = records.count('>')
-    # error = True
-    # while error == True:    
-    #     try:
-    #         result_handle = NCBIWWW.qblast("blastn", "nt", records, entrez_query='((Papilionoidea[Organism]) OR Hedylidae[Organism]) OR Hesperiidae[Organism]', word_size=28, hitlist_size=100)
-    #         error = False
-    #     except:
-    #         error = True
-    # #get rid of this extra step of printing xml using NCBIXML
-    # with open(infile+".xml", "w") as save_file:
-    #     save_file.write(result_handle.read())
-    #     result_handle.close()
+    error = True
+    while error == True:    
+        try:
+            result_handle = NCBIWWW.qblast("blastn", "nt", records, entrez_query='((Papilionoidea[Organism]) OR Hedylidae[Organism]) OR Hesperiidae[Organism]', word_size=28, hitlist_size=100)
+            error = False
+        except:
+            error = True
+    #get rid of this extra step of printing xml using NCBIXML
+    with open(infile+".xml", "w") as save_file:
+        save_file.write(result_handle.read())
+        result_handle.close()
     #open self blast file for parsing
     #make dictionary of query species: query GI of those that don't have the top hit as the same species
     
