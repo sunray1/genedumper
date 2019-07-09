@@ -67,8 +67,8 @@ def resolve_seqs(blastdb):
     print("Trying to resolve COI/COII sequences")
     for i in dic_COI:
         countall += 1
-        print(i)
-        print(countall)
+        #print(i)
+        #print(countall)
         print(str(round(float(countall)/float(len(dic_COI))*100, 2))+'%')
         lengths = [int(m.split('_')[1]) for m in dic_COI[i]]
         individual = [dic_COI[i][x] for x, l in enumerate(lengths) if l < 2000]
@@ -214,7 +214,7 @@ def resolve_seqs(blastdb):
                         # try each comb from low to high and if hits 95%, choose those
                         # if multiple higher than 95%, choose one with best %
                         # if multiple with same % and same numb of combs- multiple
-    print(dic)
+    #print(dic)
  #   sys.exit()
     SeqIO.write(records, "mito_COI.fa", "fasta")
     #pulls out the GIs with first, the longest number of ATCGs and second, the longest length and makes dictionary
