@@ -26,13 +26,14 @@ elif args.taxdb:
 taxdb = args.taxdb
 #run multiple.py - breaks everything apart and tries to initially resolve it
 print('Running initial resolver')
-resolve_seqs(blastdb)
+#resolve_seqs(blastdb)
 
 list_in = [f for f in os.listdir(".") if f.endswith("accession_nums_resolved.txt")]
 
 print("Pulling down seqs for blasting")
 for f in list_in:
     print("Pulling down " + f)
+    pullseqs(f)
 #list_in = ["CAT_accession_nums_resolved.fa"]
 list_in = [f for f in os.listdir(".") if f.endswith("accession_nums_resolved.fa")]
 # print(list_in)
