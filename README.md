@@ -71,7 +71,7 @@ install.packages('taxize')
 
 You might also need an API key since we're hitting NCBI frequently. If you have a My NCBI account, this should be under your account settings. Just copy and paste it into the R script.
 
-Using the R script is straightforward, using your inputted list (I typically do this as a csv without a header with one species name on each line). The script uses NCBI's taxonomy as a reference and will ask for user input if there are multiple reference taxa found.
+Using the R script is straightforward, using your inputted list (I typically do this as a csv without a header with one species name on each line named "Species_list.csv"). The script uses NCBI's taxonomy as a reference and will ask for user input if there are multiple reference taxa found.
 
 The script only searches the genera of inputted species in order to save time. The outputted taxonomy is called 'Taxonomy.csv' and is formatted for direct input into the next step. It does NOT pull synonymns however, so if you have those, you'll have to add those in yourself.
 
