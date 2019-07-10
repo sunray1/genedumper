@@ -13,9 +13,9 @@ Required inputs for each step:
     a. Taxonomy in .csv format (can contain synonyms in separate column) OR
     b. List of Species (can contain synonyms in separate column)
     c. .config file describing taxonomy (can edit given one)
-2. Initial BLAST and Species Name Resolution
+2. Initial BLAST and Species Name Resolution (GeneDump)
     a. One FASTA file containing one of each of the loci of interest. Ideally these sequences need to be full length.
-3. Cleaning and Validation
+3. Cleaning and Validation (GeneClean)
     a. SQL database of BLAST hits created by step 2.
 
 Example inputs:
@@ -90,14 +90,14 @@ $ python load_taxonomy.py -l none -d empty.db example.conf
 ```
 It uses libraries found in the taxolib folder and should be run in the same location as this folder. This will load your data from your .csv file (location noted in .conf file) into empty.db. This database will be used in subsequent steps as the main taxonomy.
 
-### Initial BLAST and SQL database formation
+### Initial BLAST and SQL database formation (GeneDump)
 
 The script to run the intial BLAST and put results into a SLQ database is called run_scripts.py. It uses libraries in the blastlib folder and should be run in the same location as this folder. It runs certain steps based on user input. -b is the name of the outputted BLAST sequence SQL database, while -t is the inputted taxonomy database made in the step above. 
 
 A FASTA file containing your loci of interest is required for the BLAST step.
 
 ```
-$ python run_scripts.py -h
+$ python GeneDump.py -h
 usage: GeneDump.py [-h] [-b BLASTDB] [-s STEPS] [-t TAXDB] [-c CALCSTATS]
                       [-f FASTAIN]
 
@@ -139,7 +139,7 @@ The -c option allows the user to produce a presence/absense matrix depicting wha
 
 
 
-### Sequence Cleaning and Validation
+### Sequence Cleaning and Validation (GeneClean)
 
 This last step is useful if you wish to pull down a cleaned version of your sequences. The script for this is GeneClean.py and uses the alignlib and cleanlib libraries and should be run in the same location as these folders. This step can take ~24 hours depending on your blast database size.
 
@@ -154,7 +154,7 @@ $ python GeneClean.py -b blast_db -t taxonomy_db
 
 The output of this step is simply a SQL database containing your taxonomy.
 
-### Initial BLAST and SQL database formation
+### Initial BLAST and SQL database formation (GeneDump)
 There are six main outputs from this section if all steps are run.
 1. .xml files for each of your loci from step 0. These files are the initial BLAST results.
 2. .csv files for each of your loci from step 1. These files are the .csv version of the .xml files described above and can be used to see if your BLAST search is finding particular sequences. 
@@ -163,7 +163,7 @@ There are six main outputs from this section if all steps are run.
 5. spell.txt is a tab delimited file containing all the changes made by step 6. The first column is what the species was originally, the second column is which sequences the changes were made in and the third column is what the species was changed to. The fourth column is used to specify if the script actually changed the names or if it wasn't sure and needs a decision to be made by the user. These will be labeled 'hand' or 'multiple' if there were multiple guesses. 
 6. The last and most important output file is the database made by the BLAST search. If all steps are run, this will be be complete with names resolved.
 7. [optional] If -c is run, a presence/absense matrix will be created. 
-### Taxonomy database formation
+### Sequence Cleaning and Validation (GeneClean)
 Outputs of 3rd section here*
 
 
