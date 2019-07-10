@@ -69,9 +69,11 @@ If you need an inferred taxonomy given a list of species/synonyms, you will need
 install.packages('taxize')
 ```
 
+You might also need an API key since we're hitting NCBI frequently. If you have a My NCBI account, this should be under your account settings. Just copy and paste it into the R script.
+
 Using the R script is straightforward, using your inputted list (I typically do this as a csv without a header with one species name on each line). The script uses NCBI's taxonomy as a reference and will ask for user input if there are multiple reference taxa found.
 
-The script only searches the genera of inputted species in order to save time. The outputted taxonomy is called 'Taxonomy.csv' and is formatted for direct input into the next step. 
+The script only searches the genera of inputted species in order to save time. The outputted taxonomy is called 'Taxonomy.csv' and is formatted for direct input into the next step. It does NOT pull synonymns however, so if you have those, you'll have to add those in yourself.
 
 Once you have a taxonomy OR are providing one you need two other input files. Both of these files are included in the taxonomy_files folder.
 1. .config file (can edit the one that is included)
@@ -131,7 +133,7 @@ $ python GeneDump.py -b output_blast.db -t input_taxonomy.db -f FASTA_file -s 01
 ```
 Alternatively to run all steps, the -s arguement can be ignored as the script runs all steps by default.
 
-Steps 4-6 are not necessary, but can be useful if the user wants to try and resolve names that are lableled or spelled incorrectly. Step 4 will double check NCBI for species names, step 5 will check for species that have been labeled as subspecies and step 6 will attempt to check for spelling errors.
+Steps 4-6 are not necessary, but can be useful if the user wants to try and resolve names that are lableled or spelled incorrectly. Step 4 will update the species names with names that NCBI has resolved, step 5 will check for species that have been labeled as subspecies and step 6 will attempt to check for spelling errors.
 
 The -c option allows the user to produce a presence/absense matrix depicting what was found in the initial blast. This is usually at the Species level, but other levels can be specified instead (Genus, Family, etc.).
 
