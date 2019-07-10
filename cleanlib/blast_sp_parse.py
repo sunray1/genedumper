@@ -49,12 +49,12 @@ def test_resolved_seqs(infile, blastdb, taxdb):
             for alignment in rec.alignments:
                 for hsp in alignment.hsps:
                     identity=float(hsp.identities)/float(hsp.align_length)
-                    print(identity)
+                    #print(identity)
                 if alignment.title.split("|")[1] == queryGI:
                     pass
                 else:
                     hitdic[str(alignment.title.split("|")[1])] = identity
-            print(hitdic)
+            #print(hitdic)
             maxiden = max(hitdic.values())
             hitGIs = [GI for GI, iden in hitdic.iteritems() if iden == maxiden]
             for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + queryGI + "'"):
