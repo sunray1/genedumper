@@ -98,7 +98,11 @@ def test_resolved_seqs(infile, blastdb, taxdb):
         #align each seq to the first one - first one acts as the 'default' direction
         for x, GI in enumerate(other_GIs):
             GI_pair = [first_GI, GI]
-            alignment = alignment_reg(GI_pair)
+            try:
+                alignment = alignment_reg(GI_pair)
+            except:
+                print("Error: couldn't align ", GI_pair)
+                continue
             iden = identity_calc(alignment)
             if iden < 90:
 #                print("Low Aligned Identity: " + str(iden))
