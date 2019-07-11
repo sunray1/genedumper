@@ -46,3 +46,6 @@ if os.path.getsize("multiple_gene_choices.txt") > 0:
     cluster(blastdb, taxdb)
 else:
     os.remove("multiple_gene_choices.txt")
+
+print("Pulling down final cleaned sequences")
+pullseqs("final_seqs.txt")
