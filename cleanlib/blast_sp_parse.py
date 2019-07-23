@@ -162,10 +162,10 @@ def test_resolved_seqs(infile, blastdb, taxdb):
         print("Blasting error seqeuences (seqs don't align together and one doesn't align to whole)")        
         seqs_to_blast_flat = [item for sublist in seqs_to_blast for item in sublist]
         try:
-            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c)
+            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email)
         except:
             time.sleep(5)
-            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c)
+            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email)
 #        print(hits_all)
         print("Parsing taxonomy for error sequences")
         for x, list_of_GIs in enumerate(seqs_to_blast):

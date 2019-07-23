@@ -2,13 +2,13 @@
 #script designed to use blast.db and get accession numbers to pull down.
 #This pulls down those with only one choice and pulls longest for those with multiple
 
-def resolve_seqs(blastdb):
+def resolve_seqs(blastdb, email):
     import os, sys, sqlite3, re, time, itertools
     from Bio import Seq, Entrez, SeqIO
     from blastlib.clean_seq_funcs import resolve_seqs, alignment_reg, alignment_comp, alignment_rev_comp, identity_calc, tiling
     conn = sqlite3.connect(blastdb)
     c = conn.cursor()
-    Entrez.email = "sunray1@ufl.edu"
+    Entrez.email = email
     GI_nums_all = set()
     GI_nums_single = set()
     GI_nums_all_COI = set()
@@ -76,7 +76,7 @@ def resolve_seqs(blastdb):
         mito = [dic_COI[i][x] for x, l in enumerate(lengths) if l > 3000]
         if len(mito) > 0:
             GIs_to_align = [mito[0].split("_")[0], 'GU365907']
-            alignment = alignment_reg(GIs_to_align)
+            alignment = alignment_reg(GIs_to_align, email)
             iden = identity_calc(alignment)
             if iden > 80:
                 #have to do span to account for random small blocks that dont align
@@ -142,7 +142,7 @@ def resolve_seqs(blastdb):
                             ranges[(start, end)] = [m]
                     else:
                         print('Alignment below 70')
-                        print(GIs_to_align)
+                        #print(GIs_to_align)
                 if len(ranges) == 0:
                     print('All alignments below 70, printing to file')
                     with open("COI_hand_check.txt", "a") as a:

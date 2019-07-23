@@ -4,10 +4,10 @@
 # is in the taxonomy database.
 #
 # Changes are noted in 'ncbi.txt'
-def ncbi(taxdb, blastdb):
+def ncbi(taxdb, blastdb, email):
 	import time, sqlite3, sys
 	from Bio import Entrez
-	Entrez.email = 'sunray1@ufl.edu'
+	Entrez.email = email
 	num_spe_dic = {}
 	count = 1
 	conn = sqlite3.connect(taxdb)

@@ -19,10 +19,12 @@ argp.add_argument('-s', '--steps', help='the steps the program will run \n0 - ru
 argp.add_argument('-t', '--taxdb', help='the name of the taxonomy database')
 argp.add_argument('-c', '--calcstats', help='calculate statistics based on the taxonomy level given, ie Species, Genus')
 argp.add_argument('-f', '--fastain', help='the fasta file that blast will use')
+argp.add_argument('-e', '--email', help='user email used for NCBI', required=True)
 argp.set_defaults(blastdb='blast_results.db', taxdb=False)
 args = argp.parse_args()
 blastdb = args.blastdb
 steps = args.steps
+email = args.email
 
 if len(sys.argv) == 1:
     argp.print_help()
@@ -105,7 +107,7 @@ if '3' in steps:
     print("Step 3 complete\n----------------------")
 if '4' in steps:
     print("Running step 4: checking ncbi for names.....\n")
-    ncbi(taxdb, blastdb)
+    ncbi(taxdb, blastdb, email)
     find_id(taxdb, blastdb)
     print("Step 4 complete, ncbi.txt file contains changes\n----------------------")
 if '5' in steps:

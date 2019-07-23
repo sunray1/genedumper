@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-def pullseqs(GIfile):
+def pullseqs(GIfile, email):
 	from Bio import Entrez, SeqIO
 	import os, sys, time
 
-	Entrez.email = "sunray1@ufl.edu"
+	Entrez.email = email
 	seqids = []
 	records = []
 

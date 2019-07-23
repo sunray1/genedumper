@@ -7,9 +7,9 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Blast import NCBIWWW, NCBIXML
 import itertools
 muscle_cline = MuscleCommandline(clwstrict=True)
-Entrez.email = "sunray1@ufl.edu"
 
-def resolve_seqs(list_of_GIs):
+def resolve_seqs(list_of_GIs, email):
+    Entrez.email = email
     time.sleep(.5)
     #give a list of GIs, checks the amount DNA/length, returns list of max
     joined_GIs = ",".join(list_of_GIs)
@@ -37,7 +37,8 @@ def resolve_seqs(list_of_GIs):
         GI_to_pick = [list_of_GIs[i] for i, x in enumerate(sums) if x == max(sums)]
     return(GI_to_pick)
 
-def alignment_reg(align_GIs):
+def alignment_reg(align_GIs, email):
+    Entrez.email = email
     time.sleep(.5)
     joined_GIs = ",".join(align_GIs)
     error = True
@@ -72,7 +73,8 @@ def identity_calc(align):
         iden = 100*(count/float((len(align[0])-gaps)))
     return(iden)
 
-def alignment_rev_comp(align_GIs):
+def alignment_rev_comp(align_GIs, email):
+    Entrez.email = email
     firstGI = align_GIs[0]
     error = True
     while error == True:
@@ -102,7 +104,8 @@ def alignment_rev_comp(align_GIs):
     align = AlignIO.read(StringIO(stdout), "clustal")
     return(align)
 
-def alignment_comp(align_GIs):
+def alignment_comp(align_GIs, email):
+    Entrez.email = email
     firstGI = align_GIs[0]
     error = True
     while error == True:
@@ -136,7 +139,8 @@ def alignment_comp(align_GIs):
     align = AlignIO.read(StringIO(stdout), "clustal")
     return(align)
 
-def blast_all(blast_list, blast_nums, blast_tcids, c):
+def blast_all(blast_list, blast_nums, blast_tcids, c, email):
+    Entrez.email = email
     hit_levels_return = []
     joined_GIs = ",".join(blast_list)
     error = True
@@ -336,15 +340,15 @@ def tiling(list_of_GIs_local, gene):
             GIs_to_align = [m, 'GU365907']
         #need to change this
         idens_for_ind = []
-        alignment = alignment_reg(GIs_to_align)
+        alignment = alignment_reg(GIs_to_align, email)
         iden = identity_calc(alignment)
         idens_for_ind.append(iden)
         if iden < 70:
-            alignment = alignment_rev_comp(GIs_to_align)
+            alignment = alignment_rev_comp(GIs_to_align, email)
             iden = identity_calc(alignment)
             idens_for_ind.append(iden)
             if iden < 70: 
-                alignment = alignment_comp(GIs_to_align)
+                alignment = alignment_comp(GIs_to_align, email)
                 iden = identity_calc(alignment)
                 idens_for_ind.append(iden)
         span = 0

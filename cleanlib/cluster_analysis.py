@@ -10,8 +10,8 @@ from Bio.Align import AlignInfo
 from StringIO import StringIO
 from blastlib.clean_seq_funcs import alignment_comp, alignment_reg, alignment_rev_comp, blast, identity_calc, tiling
 
-def cluster(blastdb, taxdb):
-    Entrez.email = "sunray1@ufl.edu"
+def cluster(blastdb, taxdb, email):
+    Entrez.email = email
     conn = sqlite3.connect(blastdb)
     c = conn.cursor()
     c.execute("ATTACH '" + taxdb + "' as 'tax'")
@@ -88,16 +88,16 @@ def cluster(blastdb, taxdb):
     for i in two_dic:
         #align the two seqs
         list_of_GIs = two_dic[i]
-        alignment = alignment_reg(list_of_GIs)
+        alignment = alignment_reg(list_of_GIs, email)
         iden = identity_calc(alignment)
         if iden < 95:
 #            print("Low Aligned Identity: " + str(iden))
-            alignment = alignment_rev_comp(list_of_GIs)
+            alignment = alignment_rev_comp(list_of_GIs, email)
             iden = identity_calc(alignment)
             if iden < 95: 
     #get taxonomy for query(main species)
  #               print("Low Reverse Complement Aligned Identity: " + str(iden))
-                alignment = alignment_comp(list_of_GIs)
+                alignment = alignment_comp(list_of_GIs, email)
                 iden = identity_calc(alignment)
                 if iden < 95:
  #                   print("Low Complement Aligned Identity: " + str(iden))
