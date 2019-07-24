@@ -2,6 +2,7 @@
 #Script does self blast of those with multiple species/gene hits to make sure the top hit is the rejected hit
 
 def test_resolved_seqs(infile, blastdb, taxdb):
+    ent_query = get_blast_query(taxdb)
     import sqlite3, sys, time
     from Bio.Blast import NCBIWWW, NCBIXML
     from blastlib.clean_seq_funcs import resolve_seqs, alignment_comp, alignment_reg, alignment_rev_comp, blast, blast_all, identity_calc, tiling
@@ -22,7 +23,7 @@ def test_resolved_seqs(infile, blastdb, taxdb):
     error = True
     while error == True:    
         try:
-            result_handle = NCBIWWW.qblast("blastn", "nt", records, entrez_query='((Papilionoidea[Organism]) OR Hedylidae[Organism]) OR Hesperiidae[Organism]', word_size=28, hitlist_size=100)
+            result_handle = NCBIWWW.qblast("blastn", "nt", records, entrez_query=ent_query, word_size=28, hitlist_size=100)
             error = False
         except:
             error = True
@@ -129,7 +130,7 @@ def test_resolved_seqs(infile, blastdb, taxdb):
             finalseqs.add(error_dic[tc_id])
             newseqs.add(error_dic[tc_id])
         else:
-            idens, start_stop = tiling(list_of_GIs, gene_name)
+            idens, start_stop = tiling(list_of_GIs, gene_name, fasta_file)
             current_start = -1
             current_stop = -1 
             result = []
@@ -162,10 +163,10 @@ def test_resolved_seqs(infile, blastdb, taxdb):
         print("Blasting error seqeuences (seqs don't align together and one doesn't align to whole)")        
         seqs_to_blast_flat = [item for sublist in seqs_to_blast for item in sublist]
         try:
-            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email)
+            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email, taxdb)
         except:
             time.sleep(5)
-            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email)
+            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email, taxdb)
 #        print(hits_all)
         print("Parsing taxonomy for error sequences")
         for x, list_of_GIs in enumerate(seqs_to_blast):

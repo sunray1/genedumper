@@ -5,6 +5,7 @@ from StringIO import StringIO
 from Bio.Align.Applications import MuscleCommandline
 from Bio.SeqRecord import SeqRecord
 from Bio.Blast import NCBIWWW, NCBIXML
+from blastlib.clean_seq_funcs import get_blast_query
 import itertools
 muscle_cline = MuscleCommandline(clwstrict=True)
 
@@ -139,8 +140,9 @@ def alignment_comp(align_GIs, email):
     align = AlignIO.read(StringIO(stdout), "clustal")
     return(align)
 
-def blast_all(blast_list, blast_nums, blast_tcids, c, email):
+def blast_all(blast_list, blast_nums, blast_tcids, c, email, taxdb):
     Entrez.email = email
+    ent_query = get_blast_query(taxdb)
     hit_levels_return = []
     joined_GIs = ",".join(blast_list)
     error = True
@@ -158,7 +160,7 @@ def blast_all(blast_list, blast_nums, blast_tcids, c, email):
     error = True
     while error == True:
         try:
-            result_handle = NCBIWWW.qblast("blastn", "nt", data, entrez_query='((Papilionoidea[Organism]) OR Hedylidae[Organism]) OR Hesperiidae[Organism]', word_size=28, hitlist_size=100)
+            result_handle = NCBIWWW.qblast("blastn", "nt", data, entrez_query=ent_query, word_size=28, hitlist_size=100)
             error = False
         except:
             print("Error, trying again")
@@ -234,9 +236,10 @@ def blast_all(blast_list, blast_nums, blast_tcids, c, email):
     return(hit_levels_return)
     
     
-def blast(sp_tc_id, align_GIs, c):
+def blast(sp_tc_id, align_GIs, c, taxdb):
     rank = ''
     taxonomy = []
+    ent_query = get_blast_query(taxdb)
     while rank != 'Family':
         for iter in c.execute("SELECT r.namestr, tc.parent_id FROM taxon_concepts tc, ranks r WHERE tc_id = '" + str(sp_tc_id) + "'AND tc.rank_id = r.rank_id"):
             rank = iter[0]
@@ -251,7 +254,7 @@ def blast(sp_tc_id, align_GIs, c):
         error = True
         while error == True:
             try:
-                result_handle = NCBIWWW.qblast("blastn", "nt", query_GI, entrez_query='((Papilionoidea[Organism]) OR Hedylidae[Organism]) OR Hesperiidae[Organism]', word_size=28, hitlist_size=100)
+                result_handle = NCBIWWW.qblast("blastn", "nt", query_GI, entrez_query=ent_query, word_size=28, hitlist_size=100)
                 error = False
             except:
                 print("Error, trying again")
@@ -306,7 +309,7 @@ def blast(sp_tc_id, align_GIs, c):
             hit_levels_all.append(1000)
     return(hit_levels_all)
 
-def tiling(list_of_GIs_local, gene):
+def tiling(list_of_GIs_local, gene, fasta):
     idens_local = []
     start_stop_local = []
     for m in list_of_GIs_local:
@@ -376,4 +379,21 @@ def tiling(list_of_GIs_local, gene):
         start_stop_local.append([start, end])
         idens_local.append(max(idens_for_ind))
     return(idens_local, start_stop_local)
-        
+
+def get_blast_query(taxonomy):
+    
+    import sqlite3
+    conn = sqlite3.connect(taxonomy)
+    c = conn.cursor()
+    count = 100
+    family_ranks = []
+    #right now this just gets the families, but can be edited so can choose ranks
+    while count > 50:
+        for iter in c.execute("SELECT n.namestr FROM names n, names_to_taxonconcepts ntt, taxon_concepts tc, ranks r WHERE ntt.name_id = n.name_id AND ntt.tc_id = tc.tc_id AND tc.rank_id = r.rank_id AND r.namestr = 'Family'"):
+            family_ranks.append(str(iter[0]))
+        count = len(family_ranks)
+    family_orgs = ["(" + i + "[Organism])" for i in family_ranks]
+    query = " OR ".join(family_orgs)
+    return(query)
+
+

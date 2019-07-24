@@ -11,6 +11,7 @@ from blastlib.check_ncbi import ncbi
 from blastlib.epithet_check import epithet
 from blastlib.us_to_a import spelling
 from blastlib.stats import get_stats
+from blastlib.clean_seq_funcs import get_blast_query
 from argparse import ArgumentParser, RawTextHelpFormatter
 
 argp = ArgumentParser(description='Takes .xml files from blast, filters seqs and resolves names', formatter_class=RawTextHelpFormatter)
@@ -55,23 +56,17 @@ if '0' in steps:
         from Bio.Blast import NCBIWWW
         from Bio import SeqIO
         records = SeqIO.parse(args.fastain, format="fasta")
+        ent_query = get_blast_query(taxdb)
+        sys.exit()
         for record in records:
             id = record.id
             print("Blasting " + id)
             try:
-                result_handle = NCBIWWW.qblast("blastn", "nt", record.seq, entrez_query=
-                                           '(Bryopsida[Organism]) OR  (Jungermanniopsida[Organism]) OR\
-                                           (Liliopsida[Organism]) OR (Lycopodiopsida[Organism]) OR\
-                                           (Magnoliopsida[Organism]) OR (Pinopsida[Organism]) OR\
-                                           (Polypodiopsida[Organism]) OR (Psilotopsida[Organism]) OR (Sphagnopsida[Organism])', word_size=7, hitlist_size=1000000)
+                result_handle = NCBIWWW.qblast("blastn", "nt", record.seq, entrez_query=ent_query, word_size=7, hitlist_size=1000000)
             except IncompleteRead:
                 try:
                     print('Incomplete Read Error: Blast did not finish properly. Will try once more')
-                    result_handle = NCBIWWW.qblast("blastn", "nt", record.seq, entrez_query=
-                                           '(Bryopsida[Organism]) OR  (Jungermanniopsida[Organism]) OR\
-                                           (Liliopsida[Organism]) OR (Lycopodiopsida[Organism]) OR\
-                                           (Magnoliopsida[Organism]) OR (Pinopsida[Organism]) OR\
-                                           (Polypodiopsida[Organism]) OR (Psilotopsida[Organism]) OR (Sphagnopsida[Organism])', word_size=7, hitlist_size=1000000)
+                    result_handle = NCBIWWW.qblast("blastn", "nt", record.seq, entrez_query=ent_query, word_size=7, hitlist_size=1000000)
                 except IncompleteRead:
                     sys.exit('Incomplete Read Error Again. NCBI servers may be overwhelmed - try again later')
             with open(id+".xml", "w") as save_file:

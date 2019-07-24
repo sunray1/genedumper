@@ -126,7 +126,7 @@ def cluster(blastdb, taxdb, email):
                     else: 
             #get taxonomy for query(main species)
                         print("Parsing taxonomy for error sequences")
-                        hits = blast(i, list_of_GIs, c)
+                        hits = blast(i, list_of_GIs, c, taxdb)
                         #if theres only one lowest taxonomy hit, change
                         if hits.count(min(hits)) == 1:
                             finalseqs.add(str(two_dic[i][hit_levels.index(min(hits))]))
