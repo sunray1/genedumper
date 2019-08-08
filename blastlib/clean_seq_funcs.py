@@ -5,7 +5,6 @@ from StringIO import StringIO
 from Bio.Align.Applications import MuscleCommandline
 from Bio.SeqRecord import SeqRecord
 from Bio.Blast import NCBIWWW, NCBIXML
-from blastlib.clean_seq_funcs import get_blast_query
 import itertools
 muscle_cline = MuscleCommandline(clwstrict=True)
 
