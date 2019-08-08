@@ -10,12 +10,17 @@ These instructions will get you a copy of the project up and running on your loc
 
 Required inputs for each step:
 1. Taxonomy Databasing
+
     a. Taxonomy in .csv format (can contain synonyms in separate column) OR
     b. List of Species (can contain synonyms in separate column)
     c. .config file describing taxonomy (can edit given one)
+    
 2. Initial BLAST and Species Name Resolution (GeneDump)
+
     a. One FASTA file containing one of each of the loci of interest. Ideally these sequences need to be full length.
+    
 3. Cleaning and Validation (GeneClean)
+
     a. SQL database of BLAST hits created by step 2.
 
 Example inputs:
