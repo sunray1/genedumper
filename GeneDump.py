@@ -57,7 +57,6 @@ if '0' in steps:
         from Bio import SeqIO
         records = SeqIO.parse(args.fastain, format="fasta")
         ent_query = get_blast_query(taxdb)
-        sys.exit()
         for record in records:
             id = record.id
             print("Blasting " + id)
