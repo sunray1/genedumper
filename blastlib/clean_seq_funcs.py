@@ -308,7 +308,7 @@ def blast(sp_tc_id, align_GIs, c, taxdb):
             hit_levels_all.append(1000)
     return(hit_levels_all)
 
-def tiling(list_of_GIs_local, gene, fasta):
+def tiling(list_of_GIs_local, gene, email):
     idens_local = []
     start_stop_local = []
     for m in list_of_GIs_local:
