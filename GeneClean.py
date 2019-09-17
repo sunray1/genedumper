@@ -41,7 +41,7 @@ list_in = [f for f in os.listdir(".") if f.endswith("accession_nums_resolved.fa"
 # print(list_in)
 print('Checking resolved sequences')
 for f in list_in:
-	test_resolved_seqs(f, blastdb, taxdb)
+	test_resolved_seqs(f, blastdb, taxdb, email)
 
 if os.path.getsize("multiple_gene_choices.txt") > 0:
     print('Running cluster analysis for unresolved choices')
@@ -50,4 +50,4 @@ else:
     os.remove("multiple_gene_choices.txt")
 
 print("Pulling down final cleaned sequences")
-pullseqs("final_seqs.txt", email)
+pullseqs("final_GIs.txt", email)
