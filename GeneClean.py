@@ -50,4 +50,4 @@ else:
     os.remove("multiple_gene_choices.txt")
 
 print("Pulling down final cleaned sequences")
-pullseqs("final_seqs.txt")
+pullseqs("final_seqs.txt", email)
