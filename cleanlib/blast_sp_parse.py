@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #Script does self blast of those with multiple species/gene hits to make sure the top hit is the rejected hit
+from blastlib.clean_seq_funcs import get_blast_query
 
 def test_resolved_seqs(infile, blastdb, taxdb):
     ent_query = get_blast_query(taxdb)
