@@ -100,19 +100,15 @@ def test_resolved_seqs(infile, blastdb, taxdb):
         #align each seq to the first one - first one acts as the 'default' direction
         for x, GI in enumerate(other_GIs):
             GI_pair = [first_GI, GI]
-            try:
-                alignment = alignment_reg(GI_pair)
-            except:
-                print("Error: couldn't align ", GI_pair)
-                continue
+            alignment = alignment_reg(GI_pair, email)
             iden = identity_calc(alignment)
             if iden < 90:
 #                print("Low Aligned Identity: " + str(iden))
-                alignment = alignment_rev_comp(GI_pair)
+                alignment = alignment_rev_comp(GI_pair, email)
                 iden = identity_calc(alignment)
                 if iden < 90: 
 #                    print("Low Reverse Complement Aligned Identity: " + str(iden))
-                    alignment = alignment_comp(GI_pair)
+                    alignment = alignment_comp(GI_pair, email)
                     iden = identity_calc(alignment)
                     if iden < 90:
 #                        print("Low Complement Aligned Identity: " + str(iden))
