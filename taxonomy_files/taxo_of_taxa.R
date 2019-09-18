@@ -10,7 +10,8 @@ sp_list <- sp_out[[1]]$childtaxa_name
 csvlist_split <- str_split_fixed(sp_list, " ", 2)
 genera <- unique(csvlist_split[,1])
 
-class_test <- tax_name(query = genera, get = c("Kingdom", "Phylum", "Class", "Order", 'Family'), db = "ncbi")
+class_test2 <- tax_name(query = genera, get = c("Kingdom", "Phylum", "Class", "Order", 'Family'), db = "ncbi")
+#can add division_filter = "moths" to reduce interactiveness
 colnames(csvlist_split) <- c("Genus", "Epithet")
 taxa_merge <- merge(csvlist_split, class_test, by.x="Genus", by.y="query")
 taxise_out <- cbind(taxa_merge[,3:ncol(class_test)],class_test[,2])
