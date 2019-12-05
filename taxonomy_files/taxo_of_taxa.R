@@ -1,8 +1,11 @@
+#this script gets all species on Genbank for a specific taxon
+
 library(taxize)
 library(stringr)
 Sys.setenv(ENTREZ_KEY="ENTER_ENTREZ_KEY_HERE")
-csvin <- read.csv(file = "Species_list.csv", header=FALSE)
+csvin <- read.csv(file = "Taxon.csv", header=FALSE)
 csvlist <- levels(csvin$V1)
+#csvlist <- "Pieridae"
 
 
 sp_out <- downstream(csvlist, downto = "Species", db = "ncbi")
