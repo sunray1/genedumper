@@ -1,3 +1,4 @@
+#this script gets the taxonomy for a list of species
 library(taxize)
 library(stringr)
 Sys.setenv(ENTREZ_KEY="ENTER_ENTREZ_KEY_HERE")
