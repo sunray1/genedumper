@@ -1,3 +1,4 @@
+#meant to get taxonomy of a certain taxon fro genbank
 library(taxize)
 library(stringr)
 Sys.setenv(ENTREZ_KEY="2ab4a57550b4801d78fa9ac204b373348308")
