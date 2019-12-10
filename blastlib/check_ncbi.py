@@ -17,10 +17,9 @@ def ncbi(taxdb, blastdb, email):
 	for iter in c.execute("SELECT accession, Species FROM blast WHERE tc_id IS NULL;"):
 		num_spe_dic[str(iter[0])] = str(iter[1])
 	with open('ncbi.txt', 'w') as o:
-		chunksncbi = [num_spe_dic.keys()[x:x+5000] for x in range(0, len(num_spe_dic.keys()), 5000)]
-		print(len(chunksncbi))
+		dic_keys = list(num_spe_dic.keys())
+		chunksncbi = [dic_keys[x:x+5000] for x in range(0, len(num_spe_dic.keys()), 5000)]
 		for chunk in chunksncbi:
-			print(count)
 			ncbin = ",".join(chunk)
 			try:
 				handle = Entrez.efetch(db='nucleotide', id=ncbin, retmode='xml', seq_start=1, seq_stop=1)
