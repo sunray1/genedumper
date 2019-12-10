@@ -17,18 +17,19 @@ import sqlite3
 import sys
 
 def convert(filepath_or_fileobj, dbpath, table='data'):
-    if isinstance(filepath_or_fileobj, basestring):
-        fo = open(filepath_or_fileobj)
-    else:
-        fo = filepath_or_fileobj
+
+    fo = open(filepath_or_fileobj)
     reader = csv.reader(fo)
 
     types = _guess_types(fo)
 
-    print 'Inferred column types:', types
+    print('Inferred column types:' + str(types))
 
     fo.seek(0)
-    headers = reader.next()
+    try:
+        headers = reader.next()
+    except:
+        headers = next(reader)
 
     _columns = ','.join(
         ['"%s" %s' % (header, _type) for (header,_type) in zip(headers, types)]
@@ -59,13 +60,16 @@ def _guess_types(fileobj, max_sample_size=100):
     '''
     reader = csv.reader(fileobj)
     # skip header
-    _headers = reader.next()
+    try:
+        _headers = reader.next()
+    except:
+        _headers = next(reader)
     # we default to text for each field
     types = ['text'] * len(_headers)
     # order matters
     # (order in form of type you want used in case of tie to be last)
     options = [
-        ('text', unicode),
+        ('text', str),
         ('real', float),
         ('integer', int)
         # 'date',
@@ -88,7 +92,7 @@ def _guess_types(fileobj, max_sample_size=100):
                     if cell:
                         cast(cell)
                     results[idx][key] += 1
-                except (ValueError), inst:
+                except:
                     pass
         if count >= max_sample_size:
             break
