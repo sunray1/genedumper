@@ -42,9 +42,9 @@ taxoconfig = TaxonomyConfig()
 taxoparser = CSVTaxonomyParser()
 try:
     taxoconfig.read(args.infile)
-    print 'Parsing input CSV taxonomy file...'
+    print('Parsing input CSV taxonomy file...')
     taxonomyroot = taxoparser.parseCSV(taxoconfig, pgcur)
-    print 'done.'
+    print('done.')
 except (ConfigError, TaxoCSVError) as e:
     exit('\n' + str(e) + '\n')
 
@@ -81,18 +81,18 @@ if useres != 'none':
     # but we don't currently have a good way to get citation data for high-level taxa
     # anyway, so we just focus on the target taxonomy.
     for resolver in resolvers:
-        print '\nBeginning name citation resolution with ' + resolver.getSourceDescription() + '...'
+        print('\nBeginning name citation resolution with ' + resolver.getSourceDescription() + '...')
         if args.comptaxoid > -1:
             resolver.setComparisonTaxonomy(args.comptaxoid)
             resolver.setSkipIfExisting(True)
         resolver.resolve(pgcur, taxonomy.roottaxon)
-        print 'name resolution with ' + resolver.getSourceDescription() + ' finished.'
+        print('name resolution with ' + resolver.getSourceDescription() + ' finished.')
 
 # Make sure the taxonomy is persisted to the database.
-print '\nPersisting taxonomy to the database...'
+print('\nPersisting taxonomy to the database...')
 taxonomy.persist(pgcur, True)
-print 'finished.'
+print('finished.')
 
 totalrows, totaltaxa = taxoparser.getStats()
-print '\nProcessed', totalrows, 'CSV file rows containing', totaltaxa, 'unique taxa.\n'
+print('\nProcessed', totalrows, 'CSV file rows containing', totaltaxa, 'unique taxa.\n')
 
