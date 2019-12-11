@@ -7,7 +7,10 @@ from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Seq import Seq
 from Bio.Align.Applications import MuscleCommandline
 from Bio.Align import AlignInfo
-from StringIO import StringIO
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO ## for Python 3
 from blastlib.clean_seq_funcs import alignment_comp, alignment_reg, alignment_rev_comp, blast, identity_calc, tiling
 
 def cluster(blastdb, taxdb, email):
