@@ -26,7 +26,8 @@ def resolve_seqs(blastdb, email):
     #this gets a list of all taxa/genes if they only have one gene choice
     for iter in c.execute("SELECT tc_id, Gene_name, GI, hit_length FROM blast WHERE tc_id NOT NULL AND Gene_name != 'COI_trnL_COII' GROUP BY tc_id, Gene_name HAVING COUNT(*) =1;"):
         GI_nums_single.add(str(iter[0])+"_"+str(iter[1])+"|"+str(iter[2])+"_"+str(iter[3]))
-    #this give me all the GIs that have multiple gene choices
+    #this give me all the tc_idss that have multiple gene choices
+    #tc_id_gene|GI_hit_length
     GI_nums = GI_nums_all-GI_nums_single
     
     #do the same with COI
