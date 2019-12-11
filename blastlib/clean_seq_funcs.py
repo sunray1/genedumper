@@ -36,7 +36,10 @@ def resolve_seqs(list_of_GIs, email):
     elif length_DNA.count(max(length_DNA)) == 1:
         GI_to_pick = [list_of_GIs[length_DNA.index(max(length_DNA))]]
     else:
-        sums = [amount_DNA[i] + length_DNA[i] for i in xrange(len(amount_DNA))]
+        try:
+            sums = [amount_DNA[i] + length_DNA[i] for i in xrange(len(amount_DNA))] #python2
+        except:
+            sums = [amount_DNA[i] + length_DNA[i] for i in range(len(amount_DNA))] #python3
         GI_to_pick = [list_of_GIs[i] for i, x in enumerate(sums) if x == max(sums)]
     return(GI_to_pick)
 
