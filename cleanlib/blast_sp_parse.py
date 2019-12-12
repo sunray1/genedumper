@@ -7,6 +7,7 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
     import sqlite3, sys, time
     from Bio.Blast import NCBIWWW, NCBIXML
     from blastlib.clean_seq_funcs import resolve_seqs, alignment_comp, alignment_reg, alignment_rev_comp, blast, blast_all, identity_calc, tiling
+    from cleanlib.databasing import get_seqs_from_sqldb, export_fasta, create_blast_db, local_blast
     conn = sqlite3.connect(blastdb)
     c = conn.cursor()
     c.execute("ATTACH '" + taxdb + "' as 'tax'")
@@ -16,22 +17,26 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
     seqs_to_blast = []
     finalseqs = set()
     multseqs = []
+    
+    
     #do self blast and print to file
     with open(infile) as fasta_file:
         print("Blasting " + infile)
         records = fasta_file.read()
     numqueries = records.count('>')
-    error = True
-    while error == True:    
-        try:
-            result_handle = NCBIWWW.qblast("blastn", "nt", records, entrez_query=ent_query, word_size=28, hitlist_size=100)
-            error = False
-        except:
-            error = True
-    #get rid of this extra step of printing xml using NCBIXML
-    with open(infile+".xml", "w") as save_file:
-        save_file.write(result_handle.read())
-        result_handle.close()
+
+    #get all seqs that have that gene to make db out of
+    gene = infile.split("_accession_nums")[0]
+    access_list = set()
+    for iter in c.execute("SELECT accession FROM blast WHERE Gene_name = '"+ gene +"';"):
+        access_list.add(iter[0])
+    print(len(access_list))
+    iterator = get_seqs_from_sqldb(access_list, "hseq", blastdb)
+    export_fasta(iterator, gene+"_db.fa")
+    create_blast_db(gene+"_db.fa")
+    local_blast(gene+"_db.fa", infile)
+
+    
     #open self blast file for parsing
     #make dictionary of query species: query GI of those that don't have the top hit as the same species
     
@@ -44,7 +49,7 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
             print(str(round(float(count)/float(numqueries)*100, 2))+ "%")
 #figure out a new way to do this
             queryAcc = str(rec.query.split()[0])
-            for iter in c.execute("SELECT GI FROM blast WHERE accession='" + queryAcc + "'"):
+            for iter in c.execute("SELECT GI FROM blast WHERE accession='" + queryAcc + "';"):
                 queryGI = (str(iter[0]))
             hitdic = {}
             hitSp = set()
@@ -163,7 +168,7 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
                 with open('seqs_to_be_blasted.txt', 'a') as a:
                     a.write(str(list_of_GIs) + '\n')
     if len(seqs_to_blast) > 0:
-        print("Blasting error seqeuences (seqs don't align together and one doesn't align to whole)")        
+        print("Blasting error sequeences (seqs don't align together and one doesn't align to whole)")        
         seqs_to_blast_flat = [item for sublist in seqs_to_blast for item in sublist]
         try:
             hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email, taxdb)
