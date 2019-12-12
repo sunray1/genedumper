@@ -58,7 +58,10 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
                     hitdic[str(alignment.title.split("|")[1])] = identity
             #print(hitdic)
             maxiden = max(hitdic.values())
-            hitGIs = [GI for GI, iden in hitdic.iteritems() if iden == maxiden]
+            try:
+                hitGIs = [GI for GI, iden in hitdic.iteritems() if iden == maxiden] #python2
+            except:
+                hitGIs = [GI for GI, iden in hitdic.items() if iden == maxiden] #python3
             for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + queryGI + "'"):
                 querySp = (str(iter[0]))
             for i in hitGIs:
