@@ -138,20 +138,21 @@ def resolve_seqs(blastdb, email):
                 whole_length = 0
                 #do tiling
                 for m in [x.split('_')[0] for x in individual]:
-                    iden, start_stop = tiling([m], 'COI_trnL_COII', email)
+                    idens, start_stop = tiling([m], 'COI_trnL_COII', email)
                     start, end = start_stop[0]
-                    #uses gi for danaus chrysippus COI_trnL_COII
-                    if iden > 70:
-                        #make dic of lists
-                        if (start, end) in ranges.keys():
-                            ranges_dic_list = ranges[(start, end)]
-                            ranges_dic_list.append(m)
-                            ranges[(start, end)] = ranges_dic_list
+                    #uses gi for danaus chrysippus 
+                    for iden in idens:
+                        if iden > 70:
+                            #make dic of lists
+                            if (start, end) in ranges.keys():
+                                ranges_dic_list = ranges[(start, end)]
+                                ranges_dic_list.append(m)
+                                ranges[(start, end)] = ranges_dic_list
+                            else:
+                                ranges[(start, end)] = [m]
                         else:
-                            ranges[(start, end)] = [m]
-                    else:
-                        print('Alignment below 70')
-                        #print(GIs_to_align)
+                            print('Alignment below 70')
+                            #print(GIs_to_align)
                 if len(ranges) == 0:
                     print('All alignments below 70, printing to file')
                     with open("COI_hand_check.txt", "a") as a:
@@ -204,12 +205,13 @@ def resolve_seqs(blastdb, email):
                     for x, comb_frag in enumerate(sorted(combination)):
                         if comb_frag[1] - comb_frag[0] + 1 > final_tiling[x][1] - final_tiling[x][0] + 1:
                             final_tiling[x] = comb_frag
-  #              print(final_tiling)
+                print(final_tiling)
                 possible_GIs = [ranges[x] for x in final_tiling]
-#                print(possible_GIs)
+                print(possible_GIs)
                 count = 0
                 for m in possible_GIs:
                     if len(m) == 1:
+                        print(i)
                         GI_nums_single.add(i+"|"+m[0] + "_0")
                     else:
                         if count == 0:
