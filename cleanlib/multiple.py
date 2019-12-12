@@ -205,9 +205,9 @@ def resolve_seqs(blastdb, email):
                     for x, comb_frag in enumerate(sorted(combination)):
                         if comb_frag[1] - comb_frag[0] + 1 > final_tiling[x][1] - final_tiling[x][0] + 1:
                             final_tiling[x] = comb_frag
-                print(final_tiling)
+                #print(final_tiling)
                 possible_GIs = [ranges[x] for x in final_tiling]
-                print(possible_GIs)
+                #print(possible_GIs)
                 count = 0
                 for m in possible_GIs:
                     if len(m) == 1:
