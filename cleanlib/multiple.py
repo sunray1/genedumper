@@ -257,9 +257,10 @@ def resolve_seqs(blastdb, email):
             for m in finalGInums_only1:
                 o.write(str(m)+"\n")
         #this needs to go to blast_sp_parse.py
-        with open(i + "_accession_nums_resolved.txt", "w") as o:
-            for m in finalGInums_longest:
-                o.write(str(m)+"\n")
+        if len(finalGInums_longest) != 0:
+            with open(i + "_accession_nums_resolved.txt", "w") as o:
+                for m in finalGInums_longest:
+                    o.write(str(m)+"\n")
     #this needs to go to cluster.py          
     with open("multiple_gene_choices.txt", "w") as w:
         for i in dic_mult:
