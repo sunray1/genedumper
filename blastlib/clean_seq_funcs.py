@@ -205,7 +205,10 @@ def blast_all(blast_list, blast_nums, blast_tcids, c, email, taxdb):
                 maxiden = sorted(hitdic.values(), reverse = True)[0:5]
             else:
                 maxiden = hitdic.values()
-            hitGIs = [GI for GI, iden in hitdic.iteritems() if iden in maxiden]
+            try:
+                hitGIs = [GI for GI, iden in hitdic.iteritems() if iden in maxiden] #python2
+            except:
+                hitGIs = [GI for GI, iden in hitdic.items() if iden in maxiden] #python3
             for hitGI in hitGIs:
                 prev_len = len(hitSp)
     #get species for all the top hits for each GI
@@ -279,7 +282,10 @@ def blast(sp_tc_id, align_GIs, c, taxdb):
             maxiden = sorted(hitdic.values(), reverse = True)[0:5]
         else:
             maxiden = hitdic.values()
-        hitGIs = [GI for GI, iden in hitdic.iteritems() if iden in maxiden]
+        try:
+            hitGIs = [GI for GI, iden in hitdic.iteritems() if iden in maxiden] #python2
+        except:
+            hitGIs = [GI for GI, iden in hitdic.items() if iden in maxiden] #python3
         for hitGI in hitGIs:
             prev_len = len(hitSp)
 #get species for all the top hits for each GI
