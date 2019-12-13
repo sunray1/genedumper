@@ -106,7 +106,7 @@ def cluster(blastdb, taxdb, email):
  #                   print("Low Complement Aligned Identity: " + str(iden))
             #add tiling thing
                     gene_name = '_'.join(i.split('_')[1:])
-                    idens, start_stop = tiling(list_of_GIs, gene_name)
+                    idens, start_stop = tiling(list_of_GIs, gene_name, email)
                     current_start = -1
                     current_stop = -1 
                     result = []
