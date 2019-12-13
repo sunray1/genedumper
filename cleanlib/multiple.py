@@ -211,7 +211,6 @@ def resolve_seqs(blastdb, email):
                 count = 0
                 for m in possible_GIs:
                     if len(m) == 1:
-                        print(i)
                         GI_nums_single.add(i+"|"+m[0] + "_0")
                     else:
                         if count == 0:
