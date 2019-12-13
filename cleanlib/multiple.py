@@ -248,10 +248,10 @@ def resolve_seqs(blastdb, email):
         finalGInums_only1 = set()
         finalGInums_longest = set()
         for n in dic_single.keys():
-            if i == re.split('_|\|', n)[1]:
+            if i == n.split("_", 1)[1]:
                 finalGInums_longest.add(''.join(dic_single[n]))
         for n in GI_nums_single:
-            if i == re.split('_|\|', n)[1]:
+            if i == n.split("_", 1)[1]:
                 finalGInums_only1.add(re.split('_|\|', n)[-2])
         with open("final_GIs.txt", "a") as o:
             for m in finalGInums_only1:
