@@ -59,8 +59,7 @@ def resolve_seqs(blastdb, email):
             dic_list.append(i.split("|")[1])
             dic[i.split("|")[0]] = dic_list
         else:
-            dic[i.split("|")[0]] = [i.split("|")[1]]
-        genes.add(re.split('_|\|', i)[1])    
+            dic[i.split("|")[0]] = [i.split("|")[1]]    
     #same for COI
     for i in GI_nums_mult_COI:
         if i.split("|")[0] in dic_COI.keys():
@@ -69,7 +68,8 @@ def resolve_seqs(blastdb, email):
             dic_COI[i.split("|")[0]] = dic_list
         else:
             dic_COI[i.split("|")[0]] = [i.split("|")[1]]
-        genes.add(re.split('_|\|', i)[1])
+    for iter in c.execute("SELECT Gene_name from blast GROUP BY Gene_name;"):
+        genes.add(iter[0])            
    
     countall = 0
     #deal with lengths of COI and add to dic to try and resolve
