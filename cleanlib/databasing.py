@@ -9,11 +9,10 @@ def get_seqs_from_sqldb(accset, seqtype, blastdb):
     from Bio.Seq import Seq
     conn = sqlite3.connect(blastdb)
     c = conn.cursor()
-    #hseqs = []
-    for accnum in accset:
-        for iter in c.execute("SELECT "+ seqtype +" FROM blast WHERE accession = '"+ accnum +"';"):
-            record = SeqRecord(Seq(str(iter[0])), id = accnum,  description = "")
-            yield(record)
+    accset = str(accset).replace("{", "(").replace("}", ")")
+    for iter in c.execute("SELECT accession, "+ seqtype +" FROM blast WHERE accession IN "+ accset +";"):
+        record = SeqRecord(Seq(str(iter[1])), id = iter[0],  description = "")
+        yield(record)
     conn.close()
 #usage
 #seqs = get_seqs_from_sqldb(["1080121667", "914615309"], "hseq", "blast_results.db")
