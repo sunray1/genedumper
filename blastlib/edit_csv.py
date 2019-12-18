@@ -17,7 +17,7 @@ class edit():
 		root = ET.parse(self.file).getroot()
 		#  Get the length of the query sequence.
 		querylen = int(root.find('BlastOutput_query-len').text)
-		fieldnames = ['Name_num', 'num', 'Gene_name', 'GI', 'def', 'accession', 'hit_length',
+		fieldnames = ['Name_num', 'Decision', 'num', 'Gene_name', 'GI', 'def', 'accession', 'hit_length',
 					  'bit_score', 'evalue', 'q_from', 'q_to', 'h_from', 'h_to', 'identity',
 					  'align_length', 'qseq', 'hseq', 'Species', 'genus', 'epithet',
 					  'mismatches', 'qcov', 'tc_id']
@@ -89,6 +89,7 @@ class edit():
 			row['mismatches'] = mismatch
 			row['tc_id'] = 0
 			row['Name_num'] = self.basename + "_" + str(num)
+			row['Decision'] = ""
 			if evalue < 0.001:
 				writer.writerow(row)
 				

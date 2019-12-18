@@ -11,6 +11,7 @@ from blastlib.check_ncbi import ncbi
 from blastlib.epithet_check import epithet
 from blastlib.us_to_a import spelling
 from blastlib.stats import get_stats
+from blastlib.html import html
 from blastlib.clean_seq_funcs import get_blast_query
 from argparse import ArgumentParser, RawTextHelpFormatter
 
@@ -21,6 +22,7 @@ argp.add_argument('-t', '--taxdb', help='the name of the taxonomy database')
 argp.add_argument('-c', '--calcstats', help='calculate statistics based on the taxonomy level given, ie Species, Genus')
 argp.add_argument('-f', '--fastain', help='the fasta file that blast will use')
 argp.add_argument('-e', '--email', help='user email used for NCBI', required=True)
+argp.add_argument('-l', '--html', help='calculates an output html file with hero stats ab', action='store_true')
 argp.set_defaults(blastdb='blast_results.db', taxdb=False)
 args = argp.parse_args()
 blastdb = args.blastdb
@@ -31,10 +33,10 @@ if len(sys.argv) == 1:
     argp.print_help()
     sys.exit()
 
-if not args.calcstats and not args.steps:
+if not args.calcstats and not args.steps and not args.html:
     steps = '0123456'
 elif args.calcstats and not args.steps:
-    steps = ''
+    steps = None
 #Error calling
 if not args.taxdb and ('3' in steps or '4' in steps or '5' in steps or '6' in steps or args.calcstats):
     sys.exit('Error: need a taxonomy database')
@@ -46,77 +48,82 @@ if not os.path.isfile(blastdb) and '2' not in steps and ('3' in steps or '4' in 
     sys.exit("Error: no blast sqlite file called " + blastdb)
     
 #Start running functions
-if '0' in steps:
-    print('Running step 0: run blast\n')
-    if not args.fastain:
-        sys.exit("Error: needs a fasta file")
-    else:
-        if not os.path.isfile(args.fastain):
-            sys.exit('Error: no fasta file called ' + args.fastain)
-        from Bio.Blast import NCBIWWW
-        from Bio import SeqIO
-        records = SeqIO.parse(args.fastain, format="fasta")
-        ent_query = get_blast_query(taxdb)
-        for record in records:
-            id = record.id
-            print("Blasting " + id)
-            try:
-                result_handle = NCBIWWW.qblast("blastn", "nt", record.seq, entrez_query=ent_query, word_size=7, hitlist_size=1000000)
-            except IncompleteRead:
+if steps:
+    if '0' in steps:
+        print('Running step 0: run blast\n')
+        if not args.fastain:
+            sys.exit("Error: needs a fasta file")
+        else:
+            if not os.path.isfile(args.fastain):
+                sys.exit('Error: no fasta file called ' + args.fastain)
+            from Bio.Blast import NCBIWWW
+            from Bio import SeqIO
+            records = SeqIO.parse(args.fastain, format="fasta")
+            ent_query = get_blast_query(taxdb)
+            for record in records:
+                id = record.id
+                print("Blasting " + id)
                 try:
-                    print('Incomplete Read Error: Blast did not finish properly. Will try once more')
                     result_handle = NCBIWWW.qblast("blastn", "nt", record.seq, entrez_query=ent_query, word_size=7, hitlist_size=1000000)
                 except IncompleteRead:
-                    sys.exit('Incomplete Read Error Again. NCBI servers may be overwhelmed - try again later')
-            with open(id+".xml", "w") as save_file:
-                save_file.write(result_handle.read())
-                result_handle.close()
-    print("Step 0 completed\n--------------------")
-if '1' in steps:
-    print("Running step 1: converting .xml to .csv.....\n")
-    xmlfiles = [f for f in os.listdir('.') if f.endswith('.xml')]
-    if len(xmlfiles) == 0:
-        sys.exit("Error: no .xml files found")
-    for file in xmlfiles:
-        print("Converting " + file + "...")
-        test = edit(file)
-        test.xmltocsv()
-        print(file + " converted\n")
-    print("Step 1 completed\n----------------------")
-if '2' in steps:
-    print("Running step 2: converting .csv to .sql......\n")
-    if os.path.isfile(blastdb):
-        os.remove(blastdb)
-    csvfiles = [f for f in os.listdir('.') if f.endswith('.csv')]
-    if len(csvfiles) == 0:
-        sys.exit("Error: no .csv files found")
-    for file in csvfiles:
-        print("Converting " + file + "...")
-        convert(file, blastdb, 'blast')
-        print(file + " converted\n")
-    print("Step 2 completed\n----------------------")
-if '3' in steps:
-    print("Running step 3: resolving names......\n")
-    find_id(taxdb, blastdb)
-    print("Step 3 complete\n----------------------")
-if '4' in steps:
-    print("Running step 4: checking ncbi for names.....\n")
-    ncbi(taxdb, blastdb, email)
-    find_id(taxdb, blastdb)
-    print("Step 4 complete, ncbi.txt file contains changes\n----------------------")
-if '5' in steps:
-    print("Running step 5: checking epithets against species and subspecies.....\n")
-    epithet(taxdb, blastdb)
-    find_id(taxdb, blastdb)
-    print("Step 5 complete, epithet.txt file contains changes\n----------------------")
-if '6' in steps:
-    print("Running step 6: checking names for mispellings.....\n")
-    spelling(taxdb, blastdb)
-    find_id(taxdb, blastdb)
-    print("Step 6 complete, spelling.txt file contains changes and changes that must be made by hand\n----------------------")
+                    try:
+                        print('Incomplete Read Error: Blast did not finish properly. Will try once more')
+                        result_handle = NCBIWWW.qblast("blastn", "nt", record.seq, entrez_query=ent_query, word_size=7, hitlist_size=1000000)
+                    except IncompleteRead:
+                        sys.exit('Incomplete Read Error Again. NCBI servers may be overwhelmed - try again later')
+                with open(id+".xml", "w") as save_file:
+                    save_file.write(result_handle.read())
+                    result_handle.close()
+        print("Step 0 completed\n--------------------")
+    if '1' in steps:
+        print("Running step 1: converting .xml to .csv.....\n")
+        xmlfiles = [f for f in os.listdir('.') if f.endswith('.xml')]
+        if len(xmlfiles) == 0:
+            sys.exit("Error: no .xml files found")
+        for file in xmlfiles:
+            print("Converting " + file + "...")
+            test = edit(file)
+            test.xmltocsv()
+            print(file + " converted\n")
+        print("Step 1 completed\n----------------------")
+    if '2' in steps:
+        print("Running step 2: converting .csv to .sql......\n")
+        if os.path.isfile(blastdb):
+            os.remove(blastdb)
+        csvfiles = [f for f in os.listdir('.') if f.endswith('.csv')]
+        if len(csvfiles) == 0:
+            sys.exit("Error: no .csv files found")
+        for file in csvfiles:
+            print("Converting " + file + "...")
+            convert(file, blastdb, 'blast')
+            print(file + " converted\n")
+        print("Step 2 completed\n----------------------")
+    if '3' in steps:
+        print("Running step 3: resolving names......\n")
+        find_id(taxdb, blastdb)
+        print("Step 3 complete\n----------------------")
+    if '4' in steps:
+        print("Running step 4: checking ncbi for names.....\n")
+        ncbi(taxdb, blastdb, email)
+        find_id(taxdb, blastdb)
+        print("Step 4 complete, ncbi.txt file contains changes\n----------------------")
+    if '5' in steps:
+        print("Running step 5: checking epithets against species and subspecies.....\n")
+        epithet(taxdb, blastdb)
+        find_id(taxdb, blastdb)
+        print("Step 5 complete, epithet.txt file contains changes\n----------------------")
+    if '6' in steps:
+        print("Running step 6: checking names for mispellings.....\n")
+        spelling(taxdb, blastdb)
+        find_id(taxdb, blastdb)
+        print("Step 6 complete, spelling.txt file contains changes and changes that must be made by hand\n----------------------")
 if args.calcstats:
     level = args.calcstats
     print("Calculating statistics for " + level + " level.....\n")
     get_stats(taxdb, blastdb, level)
     print("Calculating statistics completed\n--------------------")
+if args.html == True:
+    print("Creating HTML.....\n")
+    html(taxdb, blastdb)
+    print("HTML output completed\n--------------------")
 print('Done')
