@@ -34,6 +34,8 @@ def spelling(taxdb, blastdb):
 							c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
 							c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
 							c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
+							c.execute("UPDATE blast SET decision='' WHERE Name_num='" + num + "';")
+
 							o.write(key + '\t' + str(name_num_dic[key]).replace("'", "").strip("[").strip("]") + '\t' + organism + '\tchanged\n')
 							update = True
 					elif key[-1:] == 'a':
@@ -48,6 +50,7 @@ def spelling(taxdb, blastdb):
 							c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
 							c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
 							c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
+							c.execute("UPDATE blast SET decision='' WHERE Name_num='" + num + "';")
 							o.write(key + '\t' + str(name_num_dic[key]).replace("'", "").strip("[").strip("]") + '\t' + organism + '\tchanged\n')
 							update = True
 					# Now lets check to see if species are misnamed due to an 'i' instead of an 'ii'
@@ -63,6 +66,8 @@ def spelling(taxdb, blastdb):
 							c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
 							c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
 							c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
+							c.execute("UPDATE blast SET decision='' WHERE Name_num='" + num + "';")
+
 							o.write(key + '\t' + str(name_num_dic[key]).replace("'", "").strip("[").strip("]") + '\t' + organism + '\tchanged\n')
 							update = True
 					else:
@@ -79,6 +84,7 @@ def spelling(taxdb, blastdb):
 							c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
 							c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
 							c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
+							c.execute("UPDATE blast SET decision='' WHERE Name_num='" + num + "';")
 							o.write(key + '\t' + str(name_num_dic[key]).replace("'", "").strip("[").strip("]") + '\t' + organism + '\tchanged\n')
 							update = True
 						elif len(organism) > 1:	
@@ -103,5 +109,7 @@ def spelling(taxdb, blastdb):
 					c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
 					c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
 					c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
+					c.execute("UPDATE blast SET decision='' WHERE Name_num='" + num + "';")
+
 	conn.commit()
 	conn.close()

@@ -13,7 +13,7 @@ class edit():
 		basename = baselist[0]
 		self.basename = basename
 
-	def xmltocsv(self):
+	def xmltocsv(self, taxdb):
 		root = ET.parse(self.file).getroot()
 		#  Get the length of the query sequence.
 		querylen = int(root.find('BlastOutput_query-len').text)
@@ -39,8 +39,11 @@ class edit():
 			defstr.replace("\'", "\'\'")
 				
 			# Get the taxon information.
-			Species, genus, epithet = pull_names(defstr)
-				
+			pull_name_out = pull_names(defstr, accession, GI, taxdb)
+			if len(pull_name_out) == 4:
+				Species, genus, epithet, decision = pull_name_out
+			elif len(pull_name_out) == 5:
+				Species, genus, epithet, decision, GI = pull_name_out				
 			# Get the first Hsp element.
 			hsp = hit.find('Hit_hsps/Hsp[1]')
 				
@@ -89,55 +92,61 @@ class edit():
 			row['mismatches'] = mismatch
 			row['tc_id'] = 0
 			row['Name_num'] = self.basename + "_" + str(num)
-			row['Decision'] = ""
+			row['Decision'] = decision
 			if evalue < 0.001:
 				writer.writerow(row)
 				
 #referenced in above function
-def pull_names(defstr):
-	# a lot of this is not generalized - need to figure out a way to change this
-	removelist = ["cf.", "nr.", "aff.", "hybrid", "form", "n.", "Cf.", "x", "X"]
-	# changes items in removelist to 'sp.' if in blast definition
-	defin = defstr.split()
-	for x in removelist:
-		if x in defin:
-			defin[defin.index(x)] = "sp."
-			
+def pull_names(defstr, accession, origGI, taxdb):
+	import sqlite3
+	conn = sqlite3.connect(taxdb)
+	c = conn.cursor()
+	#defstr = "Gynostemma 'burmanicum var. molle' isolate PT5203MT04 internal transcribed spacer 1, partial sequence; 5.8S ribosomal RNA gene, complete sequence; and internal transcribed spacer 2, partial sequence >gi|523928652|gb|KF269117.1| Gynostemma 'burmanicum var. molle' isolate PT5203MT05 internal transcribed spacer 1, partial sequence; 5.8S ribosomal RNA gene, complete sequence; and internal transcribed spacer 2, partial sequence"
+	defstr = ">gi||||"+defstr
+	#print(defstr)
+	GI = ""
+	matchbool = []
+	decision = ""
+	species ="Unknown species"
+	#accession = "ehs"
+	removelist = ["cf.", "nr.", " aff. ", " hybrid ", " form ", " n. sp.", " sp. n.", " Cf. ", " x ", " X ", " sp. ", " gen. "]
+	for i in defstr.split(">gi")[1:]:
+		#loops through till finds sp in taxonomy
+		if species == "Unknown species":
+			name_id = ""
+			defstr_sub = i.split("|")[4]
+			defin = defstr_sub.split()
+			#print("1")
+			if any(x in defstr_sub for x in removelist):
+				species = "Ambiguous species"
+				decision = "Ambiguous species/not chosen"
+				#print("2")
+				break
+			else:
+				#print("3")
+				species = defin[0] + " " + defin[1]
+				species = species.replace("\"", "")
+				species = species.replace("'", "")
+				species = species.replace("(", "")
+				species = species.replace(")", "")
+				for iter in c.execute("SELECT name_id FROM names WHERE namestr = '"+species+"'"):
+					#will only iterate through if species exists
+					GI = i.split("|")[1]
+					if GI == "":
+						GI = origGI
+					decision = ""
+					#print("4")
+				if GI != "":
+					#print("5")
+					break
+				else:
+					#print("6")
+					decision = "Species not in taxonomy/not chosen"
+		
+	# if boolian = True:
 	# sometimes definitions look like 'PREDICTED: Genus Species'
-	if defin[0] == "PREDICTED:":
-		species = "Unknown Species"
-	elif defin[0] != "PREDICTED:" and "." not in defin[0]:
-		species = " ".join(defin[0:2])
-	elif defin[0] != "PREDICTED:" and "." in defin[0]:
-		species = defin[0].split(".")[0] + " " + defin[0].split(".")[1]
-	definition = defstr
-	# sometimes definitions have Lepidoptera sp. at the beginning and the species names are later - this parses these out
-	# not generalized
-	lepcount = 0
-	while "Lepidoptera" in species:
-		lepcount += 1
-		try:
-			defsplit = definition.split(">", 1)[-1]
-			def2 = defsplit.split(' ', 1)[1]
-			defin = def2.split()
-			species = ' '.join(defin[0:2])
-			definition = defsplit
-		except:
-			species = "Unknown species"
-		if lepcount == 50:
-			species = "Unknown species"
-			break
-	# some more non generalized parsing - Burns and Robbins name things different from everything else
-	if "sp." in species and "DHJ0" in defin[2] and "Burns0" not in defin[2] and "Robbins0" not in defin[2]:
-		species = defin[0]+" "+defin[2].split("DHJ0")[0]
-	elif "sp." in species and "DHJ0" in defin[2] and ("Burns0" in defin[2] or "Robbins0" in defin[2]):
-		species = defin[0] + " " + defin[1]
-	if "sp." in species and "ECO0" in defin[2]:
-		species = defin[0]+ " " + defin[2].split("ECO0")[0]
-	elif "sp." not in species and "ECO0" in defin[1]:
-		species = defin[0] + " " + defin[1][:-5]
-	if "BioLep" in defin[0]:
-		species = defin[0][:-8] + " " + defin[1]
+	if accession[0] == "X" and accession[2] == "_":
+		decision = "Predicted species/not chosen"
 
 	try:
 		genus = species.split()[0].replace("'", "")
@@ -145,8 +154,14 @@ def pull_names(defstr):
 	except:
 		species = "Unknown species"
 		genus = species.split()[0].replace("'", "")
-		epithet = species.split()[1].replace("'", "")		
+		epithet = species.split()[1].replace("'", "")
+		decision = "Unknown species/not chosen"
 	species = species.replace("'", "")
-	return(species, genus, epithet)
+	#print(species, decision, GI)
+	if GI != "":
+		return(species, genus, epithet, decision, GI)
+	else:
+		return(species, genus, epithet, decision)
+
 
 

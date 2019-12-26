@@ -1,6 +1,27 @@
 #!/usr/bin/env python
 #script designed to create and execute local blast for cleaning
 
+def get_seqs_from_sqldb_GI(GIset, seqtype, blastdb):
+	#returns iterator of seqrecs
+    #seqtype = qseq or hseq
+    import os, sys, sqlite3
+    from Bio.SeqRecord import SeqRecord
+    from Bio.Seq import Seq
+    conn = sqlite3.connect(blastdb)
+    c = conn.cursor()
+    GIset = str(GIset).replace("[", "(").replace("]", ")")
+    if seqtype == "hseq":
+        for iter in c.execute("SELECT accession, "+ seqtype +" FROM blast WHERE GI IN "+ GIset +";"):
+            record = SeqRecord(Seq(str(iter[1])), id = iter[0],  description = "")
+            yield(record)
+    if seqtype == "qseq":
+        for iter in c.execute("SELECT Gene_name, "+ seqtype +" FROM blast WHERE GI IN "+ GIset +";"):
+            record = SeqRecord(Seq(str(iter[1])), id = iter[0],  description = "")
+            yield(record)
+
+    conn.close()
+
+
 def get_seqs_from_sqldb(accset, seqtype, blastdb):
 	#returns iterator of seqrecs
     #seqtype = qseq or hseq

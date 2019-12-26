@@ -48,6 +48,7 @@ def epithet(taxdb, blastdb):
 						c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
 						c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
 						c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
+						c.execute("UPDATE blast SET decision='' WHERE Name_num='" + num + "';")
 						o.write('Subspecies\t' + genus + ' ' + name +'\t' + str(name_num_dic[key]).replace("'", "").strip("[").strip("]") + '\t' + organism + '\n')
 						update = True
 #					Searches species - no, there are plenty of instances where epithets match but are different species
@@ -69,6 +70,8 @@ def epithet(taxdb, blastdb):
 					c.execute("UPDATE blast SET Species='" + organism + "' WHERE Name_num='" + num + "';")
 					c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE Name_num='" + num + "';")
 					c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE Name_num='" + num + "';")
+					c.execute("UPDATE blast SET decision='' WHERE Name_num='" + num + "';")
+
 						
 	conn.commit()
 	conn.close()

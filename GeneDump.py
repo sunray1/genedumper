@@ -83,7 +83,7 @@ if steps:
         for file in xmlfiles:
             print("Converting " + file + "...")
             test = edit(file)
-            test.xmltocsv()
+            test.xmltocsv(taxdb)
             print(file + " converted\n")
         print("Step 1 completed\n----------------------")
     if '2' in steps:

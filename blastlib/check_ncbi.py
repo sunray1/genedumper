@@ -48,6 +48,8 @@ def ncbi(taxdb, blastdb, email):
 					c.execute("UPDATE blast SET Species='" + organism + "' WHERE accession='" + num + "';")
 					c.execute("UPDATE blast SET genus='" + organism.split()[0] + "' WHERE accession='" + num + "';")
 					c.execute("UPDATE blast SET epithet='" + organism.split()[1] + "' WHERE accession='" + num + "';")
+					c.execute("UPDATE blast SET decision='' WHERE accession='" + num + "';")
+					
 					o.write(num_spe_dic[num] + '\t' + num + '\t' + organism + '\n')
 				handle.close()
 			conn.commit()

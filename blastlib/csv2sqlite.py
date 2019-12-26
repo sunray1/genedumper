@@ -49,7 +49,7 @@ def convert(filepath_or_fileobj, dbpath, table='data'):
         row = [ x.replace(',', '') if y in ['real', 'integer'] else x
                 for (x,y) in zip(row, types) ]
         c.execute(_insert_tmpl, row)
-
+    
     conn.commit()
     c.close()
 
@@ -106,16 +106,4 @@ def _guess_types(fileobj, max_sample_size=100):
 
     return types
 
-
-if __name__ == '__main__':
-    import sys
-    if len(sys.argv) < 3:
-        print('''csv2sqlite.py {csv-file-path} {sqlite-db-path} [{table-name}]
-
-Convert a csv file to a table in an sqlite database (which need not yet exist).
-
-* table-name is optional and defaults to 'data'
-''')
-        sys.exit(1)
-    convert(*sys.argv[1:])
 

@@ -6,6 +6,7 @@ def resolve_seqs(blastdb, email):
     import os, sys, sqlite3, re, time, itertools
     from Bio import Seq, Entrez, SeqIO
     from blastlib.clean_seq_funcs import resolve_seqs, alignment_reg, alignment_comp, alignment_rev_comp, identity_calc, tiling
+    from cleanlib.databasing import get_seqs_from_sqldb_GI
     conn = sqlite3.connect(blastdb)
     c = conn.cursor()
     Entrez.email = email
@@ -13,6 +14,7 @@ def resolve_seqs(blastdb, email):
     GI_nums_single = set()
     GI_nums_all_COI = set()
     GI_nums_single_COI = set()
+    mito_COI = set()
     genes = set()
     dic = {}
     dic_COI = {}
@@ -29,7 +31,12 @@ def resolve_seqs(blastdb, email):
     #this give me all the tc_idss that have multiple gene choices
     #tc_id_gene|GI_hit_length
     GI_nums = GI_nums_all-GI_nums_single
+    GI_nums_single_GIs = []
+    for i in GI_nums_single:
+        GI_nums_single_GIs.append(re.split('_|\|', i)[-2])
     
+    GI_nums_single_str = str(GI_nums_single_GIs).replace("[", "(").replace("]", ")")
+    c.execute("UPDATE blast SET Decision='Only choice/chosen' WHERE GI IN " + GI_nums_single_str + ";")
     #do the same with COI
     #this gets list of all taxa/genes regardless if they have multiple gene choices or not
     for iter in c.execute("SELECT tc_id, Gene_name, GI, hit_length FROM blast WHERE tc_id NOT NULL AND Gene_name == 'COI_trnL_COII' GROUP BY tc_id, Gene_name, GI;"):
@@ -42,7 +49,10 @@ def resolve_seqs(blastdb, email):
     for i in GI_nums_single_COI:
         if int(i.split("_")[-1]) > 3000:
             GI_nums_mult_COI.add(i)
+            mito_COI.add(i)
             
+    for i in mito_COI:
+        GI_nums_single_COI.remove(i)
     
     #makes a dictionary of lists for each multiple taxa/gene choice
 #    for i in GI_nums_single:
@@ -84,51 +94,25 @@ def resolve_seqs(blastdb, email):
         whole = [dic_COI[i][x] for x, l in enumerate(lengths) if l > 2000 and l < 3000]
         mito = [dic_COI[i][x] for x, l in enumerate(lengths) if l > 3000]
         if len(mito) > 0:
-            GIs_to_align = [mito[0].split("_")[0], 'GU365907']
-            alignment = alignment_reg(GIs_to_align, email)
-            iden = identity_calc(alignment)
-            if iden > 80:
-                #have to do span to account for random small blocks that dont align
-                span = 0
-                #get start
-                for l in range(len(alignment[0])):
-                    col = alignment[:, l]
-                    if '-' not in col:
-                        span += 1
-                    if span == 10:
-                        break
-                    elif span > 0 and '-' in col:
-                        span = 0
-                start = l-8
-                span = 0
-                #get stop
-                for l in reversed(range(len(alignment[0]))):
-                    col = alignment[:, l]
-                    if '-' not in col:
-                        span += 1
-                    if span == 10:
-                        break
-                    elif span > 0 and '-' in col:
-                        span = 0
-                end = l+10
-                handle = Entrez.efetch(db="nucleotide", rettype="fasta", retmode="text", id=mito[0].split("_")[0], seq_start=start-1, seq_stop=end-2)
-                record = SeqIO.read(handle, "fasta")
-                records.append(record)
-            else:
-                print('Low iden when matching COI to whole mito')
-                with open("COI_hand_check.txt", "a") as a:
-                    a.write(i + '\n')
+            mitoinGI = [mito[0].split("_")[0]]
+            iterator = get_seqs_from_sqldb_GI(mitoinGI, "hseq", blastdb)
+            for seq in iterator:
+                records.append(seq)
+            c.execute("UPDATE blast SET Decision='Mito or chloro sequence/Chosen' WHERE GI='" + mitoinGI[0] + "';")
         elif len(whole) > 0:
             #pick whole
             if len(whole) == 1:
                 GI_nums_single.add(i+"|"+whole[0])
+                c.execute("UPDATE blast SET Decision='Full length sequence/Chosen' WHERE GI='" + whole[0].split("_")[0] + "';")
             else:
                 #to pipeline
                 dic[i] = whole
-        if len(individual) > 0:
+        elif len(individual) > 0:
             #pick individual
             if len(individual) == 1:
                 GI_nums_single.add(i+"|"+individual[0])
+                c.execute("UPDATE blast SET Decision='Only choice/chosen' WHERE Name_num='" + individual[0].split("_")[0] + "';")
+                
             else:
 #                print(individual)
                 result = []
@@ -138,7 +122,7 @@ def resolve_seqs(blastdb, email):
                 whole_length = 0
                 #do tiling
                 for m in [x.split('_')[0] for x in individual]:
-                    idens, start_stop = tiling([m], 'COI_trnL_COII', email)
+                    idens, start_stop = tiling([m], 'COI_trnL_COII', email, blastdb, c)
                     start, end = start_stop[0]
                     #uses gi for danaus chrysippus 
                     for iden in idens:
@@ -154,6 +138,7 @@ def resolve_seqs(blastdb, email):
                             print('Alignment below 70')
                             #print(GIs_to_align)
                 if len(ranges) == 0:
+                    c.execute("UPDATE blast SET Decision='Sequence does not align well (<70%) to input query sequence/not chosen' WHERE Name_num='" + i + "';")
                     print('All alignments below 70, printing to file')
                     with open("COI_hand_check.txt", "a") as a:
                         a.write(i + '\n')
@@ -205,12 +190,11 @@ def resolve_seqs(blastdb, email):
                     for x, comb_frag in enumerate(sorted(combination)):
                         if comb_frag[1] - comb_frag[0] + 1 > final_tiling[x][1] - final_tiling[x][0] + 1:
                             final_tiling[x] = comb_frag
-                #print(final_tiling)
                 possible_GIs = [ranges[x] for x in final_tiling]
-                #print(possible_GIs)
                 count = 0
                 for m in possible_GIs:
                     if len(m) == 1:
+                        c.execute("UPDATE blast SET Decision='Only or best choice in tiling analysis/chosen' WHERE GI='" + m[0] + "';")
                         GI_nums_single.add(i+"|"+m[0] + "_0")
                     else:
                         if count == 0:
@@ -226,6 +210,7 @@ def resolve_seqs(blastdb, email):
                         # if multiple with same % and same numb of combs- multiple
     #print(dic)
  #   sys.exit()
+    conn.commit()
     SeqIO.write(records, "mito_COI.fa", "fasta")
     #pulls out the GIs with first, the longest number of ATCGs and second, the longest length and makes dictionary
     print("Trying to resolve all other sequences")
@@ -234,7 +219,7 @@ def resolve_seqs(blastdb, email):
         GIlist = []
         for n in dic[i]:
             GIlist.append(n.split("_")[0])
-        dic[i] = resolve_seqs(GIlist, email)
+        dic[i] = resolve_seqs(GIlist, email, blastdb)
         print(str(round((float(count)/float(len(dic)))*100, 2)) + "%")
         count += 1
     #splits the ones that still have multiple (so the longest had multiple choices) and the ones that are resolved
@@ -250,8 +235,12 @@ def resolve_seqs(blastdb, email):
             if i == n.split("_", 1)[1]:
                 finalGInums_longest.add(''.join(dic_single[n]))
         for n in GI_nums_single:
-            if i == n.split("_", 1)[1]:
+            if i == n.split("_", 1)[1].split("|")[0]:
                 finalGInums_only1.add(re.split('_|\|', n)[-2])
+        for n in GI_nums_single_COI:
+            c.execute("UPDATE blast SET Decision='Only choice/chosen' WHERE GI='" + re.split('_|\|', n)[-2] + "';")
+            if i == n.split("_", 1)[1].split("|")[0]:
+                finalGInums_only1.add(re.split('_|\|', n)[-2]) 
         with open("final_GIs.txt", "a") as o:
             for m in finalGInums_only1:
                 o.write(str(m)+"\n")
@@ -264,5 +253,6 @@ def resolve_seqs(blastdb, email):
     with open("multiple_gene_choices.txt", "w") as w:
         for i in dic_mult:
             w.write(i + "\t" + str(dic_mult[i]) + "\n")
+    conn.commit()
     conn.close()
 

@@ -8,25 +8,20 @@ except ImportError:
 from Bio.Align.Applications import MuscleCommandline
 from Bio.SeqRecord import SeqRecord
 from Bio.Blast import NCBIWWW, NCBIXML
+from cleanlib.databasing import get_seqs_from_sqldb_GI
+
 import itertools
 muscle_cline = MuscleCommandline(clwstrict=True)
 
-def resolve_seqs(list_of_GIs, email):
+def resolve_seqs(list_of_GIs, email, blastdb):
     Entrez.email = email
     time.sleep(.5)
     #give a list of GIs, checks the amount DNA/length, returns list of max
     joined_GIs = ",".join(list_of_GIs)
     amount_DNA = []
     length_DNA = []
-    error = True
-    while error == True:
-        try:
-            handle = Entrez.efetch(db="nucleotide", rettype="fasta", retmode="text", id=joined_GIs)
-            error = False
-        except:
-            print("Error, trying again")
-            time.sleep(10)
-    for seq_record in SeqIO.parse(handle, "fasta"):
+    iterator = get_seqs_from_sqldb_GI(list_of_GIs, "hseq", blastdb)
+    for seq_record in iterator:
         amount_DNA.append(seq_record.seq.count("A")+seq_record.seq.count("T")+seq_record.seq.count("C")+seq_record.seq.count("G"))
         length_DNA.append(len(seq_record))
 #    print(amount_DNA)
@@ -43,20 +38,24 @@ def resolve_seqs(list_of_GIs, email):
         GI_to_pick = [list_of_GIs[i] for i, x in enumerate(sums) if x == max(sums)]
     return(GI_to_pick)
 
-def alignment_reg(align_GIs, email):
-    Entrez.email = email
-    time.sleep(.5)
-    joined_GIs = ",".join(align_GIs)
-    error = True
-    while error == True:
-        try:
-            handle = Entrez.efetch(db="nucleotide", rettype="fasta", retmode="text", id=joined_GIs)
-            error = False
-        except:
-            print("Error, trying again")
-            time.sleep(10)
-    seqs =  SeqIO.parse(handle, "fasta")
-    handle_string = StringIO()
+def alignment_reg(align_GIs, blastdb, qseqbool):
+    #qseqbool is a boolian that says whether or not the first GI is a qseq or not
+    seqs = []
+    if qseqbool == True:
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb)
+        handle_string = StringIO()
+        for seq in iterator:
+            seqs.append(seq)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb)
+        handle_string = StringIO()
+        for seq in iterator:
+            seqs.append(seq)
+    if qseqbool == False:
+        iterator = get_seqs_from_sqldb_GI(align_GIs, "hseq", blastdb)
+        handle_string = StringIO()
+        for seq in iterator:
+            seqs.append(seq)
+            
     SeqIO.write(seqs, handle_string, "fasta")
     data = handle_string.getvalue()
     stdout, stderr = muscle_cline(stdin=data)
@@ -320,41 +319,16 @@ def blast(sp_tc_id, align_GIs, c, taxdb):
             hit_levels_all.append(1000)
     return(hit_levels_all)
 
-def tiling(list_of_GIs_local, gene, email):
+def tiling(list_of_GIs_local, gene, email, blastdb, c):
     idens_local = []
     start_stop_local = []
     for m in list_of_GIs_local:
-        if gene == 'CAD':
-            GIs_to_align = [m, '440201778']
-        if gene == 'EF-1a':
-            GIs_to_align = [m, '752854557']
-        if gene == 'RpS5':
-            GIs_to_align = [m, '342356392']
-        if gene == 'ArgKin':
-            GIs_to_align = [m, '161088179']
-        if gene == 'CAT':
-            GIs_to_align = [m, '389612591']
-        if gene == 'CoA':
-            GIs_to_align = [m, '345096916']
-        if gene == 'DDC':
-            GIs_to_align = [m, '315493443']
-        if gene == 'GAPDH':
-            GIs_to_align = [m, '914615339']
-        if gene == 'HCL':
-            GIs_to_align = [m, '298398979']
-        if gene == 'IDH':
-            GIs_to_align = [m, '914615459']
-        if gene == 'MDH':
-            GIs_to_align = [m, '914614510']
-        if gene == 'RpS2':
-            GIs_to_align = [m, '342356316']
-        if gene == 'Wgl':
-            GIs_to_align = [m, '58294437']
-        if gene == 'COI_trnL_COII':
-            GIs_to_align = [m, 'GU365907']
+        for iter in c.execute("SELECT GI from blast WHERE Gene_name = '"+gene+"' LIMIT 1;"):
+            qseqGI = str(iter[0])
+        GIs_to_align = [qseqGI, m]
         #need to change this
         idens_for_ind = []
-        alignment = alignment_reg(GIs_to_align, email)
+        alignment = alignment_reg(GIs_to_align, blastdb, True)
         iden = identity_calc(alignment)
         idens_for_ind.append(iden)
         if iden < 70:
