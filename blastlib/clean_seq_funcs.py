@@ -13,9 +13,7 @@ from cleanlib.databasing import get_seqs_from_sqldb_GI
 import itertools
 muscle_cline = MuscleCommandline(clwstrict=True)
 
-def resolve_seqs(list_of_GIs, email, blastdb):
-    Entrez.email = email
-    time.sleep(.5)
+def resolve_seqs(list_of_GIs, blastdb):
     #give a list of GIs, checks the amount DNA/length, returns list of max
     joined_GIs = ",".join(list_of_GIs)
     amount_DNA = []
@@ -78,66 +76,43 @@ def identity_calc(align):
         iden = 100*(count/float((len(align[0])-gaps)))
     return(iden)
 
-def alignment_rev_comp(align_GIs, email):
-    Entrez.email = email
-    firstGI = align_GIs[0]
-    error = True
-    while error == True:
-        try:
-            handle = Entrez.efetch(db="nucleotide", rettype="fasta", retmode="text", id=firstGI)
-            error = False
-        except:
-            print("Error, trying again")
-            time.sleep(10)
-    seqs =  SeqIO.parse(handle, "fasta")
-    seq = next(seqs).reverse_complement()
+def alignment_rev_comp(align_GIs, blastdb, qseqbool):
+    #qseqbool is a boolian that says whether or not the first GI is a qseq or not
+    seqs = []
+    if qseqbool == True:
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb)
+    if qseqbool == False:
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb)
     handle_string = StringIO()
-    SeqIO.write(seq, handle_string, "fasta")
-    otherGIs = align_GIs[1:]
-    error = True
-    while error == True:
-        try:
-            handle = Entrez.efetch(db="nucleotide", rettype="fasta", retmode="text", id=otherGIs)
-            error = False
-        except:
-            print("Error, trying again")
-            time.sleep(10)
-    seqs =  SeqIO.parse(handle, "fasta")
+    for seq in iterator:
+        seqs.append(seq.reverse_complement())
+    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb)
+    handle_string = StringIO()
+    for seq in iterator:
+        seqs.append(seq)
     SeqIO.write(seqs, handle_string, "fasta")
     data = handle_string.getvalue()
     stdout, stderr = muscle_cline(stdin=data)
     align = AlignIO.read(StringIO(stdout), "clustal")
     return(align)
 
-def alignment_comp(align_GIs, email):
-    Entrez.email = email
-    firstGI = align_GIs[0]
-    error = True
-    while error == True:
-        try:
-            handle = Entrez.efetch(db="nucleotide", rettype="fasta", retmode="text", id=firstGI)
-            error = False
-        except:
-            print("Error, trying again")
-            time.sleep(10)
-    seqs =  SeqIO.parse(handle, "fasta")
-    seq = next(seqs)
-    #since seqrecord doesnt have a complement function yet, we have to call the complement on the Seq object(the sequence itself) and create a seqrecord
-    seq_comp = SeqRecord(seq.seq.complement())
-    seq_comp.id = seq.id
-    seq_comp.description = seq.description
+def alignment_comp(align_GIs, blastdb, qseqbool):
+    #qseqbool is a boolian that says whether or not the first GI is a qseq or not
+    seqs = []
+    if qseqbool == True:
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb)
+    if qseqbool == False:
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb)
     handle_string = StringIO()
-    SeqIO.write(seq_comp, handle_string, "fasta")
-    otherGIs = align_GIs[1:]
-    error = True
-    while error == True:
-        try:
-            handle = Entrez.efetch(db="nucleotide", rettype="fasta", retmode="text", id=otherGIs)
-            error = False
-        except:
-            print("Error, trying again")
-            time.sleep(10)
-    seqs =  SeqIO.parse(handle, "fasta")
+    for seq in iterator:
+        seq_comp = SeqRecord(seq.seq.complement())
+        seq_comp.id = seq.id
+        seq_comp.description = seq.description
+        seqs.append(seq_comp)
+    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb)
+    handle_string = StringIO()
+    for seq in iterator:
+        seqs.append(seq)
     SeqIO.write(seqs, handle_string, "fasta")
     data = handle_string.getvalue()
     stdout, stderr = muscle_cline(stdin=data)
@@ -319,7 +294,7 @@ def blast(sp_tc_id, align_GIs, c, taxdb):
             hit_levels_all.append(1000)
     return(hit_levels_all)
 
-def tiling(list_of_GIs_local, gene, email, blastdb, c):
+def tiling(list_of_GIs_local, gene, blastdb, c):
     idens_local = []
     start_stop_local = []
     for m in list_of_GIs_local:
@@ -332,11 +307,11 @@ def tiling(list_of_GIs_local, gene, email, blastdb, c):
         iden = identity_calc(alignment)
         idens_for_ind.append(iden)
         if iden < 70:
-            alignment = alignment_rev_comp(GIs_to_align, email)
+            alignment = alignment_rev_comp(GIs_to_align, blastdb, True)
             iden = identity_calc(alignment)
             idens_for_ind.append(iden)
             if iden < 70: 
-                alignment = alignment_comp(GIs_to_align, email)
+                alignment = alignment_comp(GIs_to_align, blastdb, True)
                 iden = identity_calc(alignment)
                 idens_for_ind.append(iden)
         span = 0

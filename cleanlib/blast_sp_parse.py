@@ -24,8 +24,8 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
         print("Blasting " + infile)
         records = fasta_file.read()
     numqueries = records.count('>')
-
-    #get all seqs that have that gene to make db out of
+    # 
+    # #get all seqs that have that gene to make db out of
     gene = infile.split("_accession_nums")[0]
     access_list = set()
     for iter in c.execute("SELECT accession FROM blast WHERE Gene_name = '"+ gene +"';"):
@@ -35,7 +35,6 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
     export_fasta(iterator, gene+"_db.fa")
     create_blast_db(gene+"_db.fa")
     local_blast(gene+"_db.fa", infile)
-
     
     #open self blast file for parsing
     #make dictionary of query species: query GI of those that don't have the top hit as the same species
@@ -51,6 +50,7 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
             queryAcc = str(rec.query.split()[0])
             for iter in c.execute("SELECT GI FROM blast WHERE accession='" + queryAcc + "';"):
                 queryGI = (str(iter[0]))
+            #hitdic is GIs and idens of all in .xml
             hitdic = {}
             hitSp = set()
             for alignment in rec.alignments:
@@ -73,6 +73,7 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
                 for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + i + "'"):
                     hitSp.add(str(iter[0]))
             #only look at top 5 if it doesnt hit the top hit - faster
+            #sort hitdic by idens
             if querySp not in hitSp:
                 hitSp = set()
                 if len(hitdic.values()) > 5:
@@ -83,19 +84,23 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
                     hitGIs = [GI for GI, iden in hitdic.iteritems() if iden in maxiden] #python2
                 except:
                     hitGIs = [GI for GI, iden in hitdic.items() if iden in maxiden] #python3
+                #get hit species (actually tc_ids)
                 for i in hitGIs:
                     for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + i + "'"):
                         hitSp.add(str(iter[0]))
+                #if species of query not in the list of hit species
                 if querySp not in hitSp:
                     error_dic[querySp] = queryGI
                 else:
+                    c.execute("UPDATE blast SET decision='Longest or most info, good top hit/chosen' WHERE GI='" + queryGI + "';")
                     finalseqs.add(queryGI)
             else:
+                c.execute("UPDATE blast SET decision='Longest or most info, good top hit/chosen' WHERE GI='" + queryGI + "';")
                 finalseqs.add(queryGI)
     count = 0
+    #error_dic is dictionary that has species = GI that doesn't match species when self blast
     #error_dic['21204'] = '316994286'
     ##go through error dictionary and align the 'same' gene/species to see if they're weird looking
-    newseqs=set()
     print("Checking nonmatching sequences")
     for tc_id in error_dic:
         count += 1
@@ -109,17 +114,18 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
         other_GIs = list_of_GIs[1:]
         pair_check = []
         #align each seq to the first one - first one acts as the 'default' direction
+        #print(other_GIs)
         for x, GI in enumerate(other_GIs):
             GI_pair = [first_GI, GI]
-            alignment = alignment_reg(GI_pair, email)
+            alignment = alignment_reg(GI_pair, blastdb, False)
             iden = identity_calc(alignment)
             if iden < 90:
 #                print("Low Aligned Identity: " + str(iden))
-                alignment = alignment_rev_comp(GI_pair, email)
+                alignment = alignment_rev_comp(GI_pair, blastdb, False)
                 iden = identity_calc(alignment)
                 if iden < 90: 
 #                    print("Low Reverse Complement Aligned Identity: " + str(iden))
-                    alignment = alignment_comp(GI_pair, email)
+                    alignment = alignment_comp(GI_pair, blastdb, False)
                     iden = identity_calc(alignment)
                     if iden < 90:
 #                        print("Low Complement Aligned Identity: " + str(iden))
@@ -133,12 +139,13 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
             else:
                 pair_check.append(1)
 #                print("High Aligned Identity: " + str(iden) + " so pair is fine")
-#        print(pair_check)
+        #print(pair_check)
+        #1 is when the GI aligned to chosen one just fine, 0 is when it doesn't
         if all(i == 1 for i in pair_check):
+            c.execute("UPDATE blast SET decision='Sequence did not have same top blast species, but all aligned correctly/Chosen' WHERE GI='" + error_dic[tc_id] + "';")
             finalseqs.add(error_dic[tc_id])
-            newseqs.add(error_dic[tc_id])
         else:
-            idens, start_stop = tiling(list_of_GIs, gene_name, fasta_file)
+            idens, start_stop = tiling(list_of_GIs, gene_name, blastdb, c)
             current_start = -1
             current_stop = -1 
             result = []
@@ -153,10 +160,11 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
                 if len(result) == len(start_stop):
 #                    print("Seqs align to different regions of probe, choosing all")
                     for x in list_of_GIs:
-                      finalseqs.add(x)
-                      newseqs.add(x)
+                        c.execute("UPDATE blast SET decision='Best sequence in tiling analysis/Chosen' WHERE GI='" + x + "';")
+                        finalseqs.add(x)
                 else:
 #                    print('Seqs overlap: Printing to file for hand checking')
+                    #these sequences are wierd because they align to the whole, but don't align together well
                     with open('these_seqs_overlap.txt' , 'a') as a:
                         a.write(str(list_of_GIs) + '\n') 
             else:
@@ -167,8 +175,9 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
                 seqs_to_blast.append(list_of_GIs)
                 with open('seqs_to_be_blasted.txt', 'a') as a:
                     a.write(str(list_of_GIs) + '\n')
+
     if len(seqs_to_blast) > 0:
-        print("Blasting error sequeences (seqs don't align together and one doesn't align to whole)")        
+        print("Blasting error sequences (seqs do not align together and one doesn't align to whole)")        
         seqs_to_blast_flat = [item for sublist in seqs_to_blast for item in sublist]
         try:
             hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email, taxdb)
@@ -225,5 +234,5 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
         
                     
                     
-    
+    conn.commit()
     conn.close()

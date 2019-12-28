@@ -41,7 +41,6 @@ list_in = [f for f in os.listdir(".") if f.endswith("accession_nums_resolved.fa"
 print('Checking resolved sequences')
 for f in list_in:
 	test_resolved_seqs(f, blastdb, taxdb, email)
-
 if os.path.getsize("multiple_gene_choices.txt") > 0:
     print('Running cluster analysis for unresolved choices')
     cluster(blastdb, taxdb, email)
