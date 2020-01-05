@@ -1,7 +1,7 @@
 
 import csv
-from taxacomponents import RankTable, Taxon, Name
-from nameresolve import NamesResolver
+from taxolib.taxacomponents import RankTable, Taxon, Name
+from taxolib.nameresolve import NamesResolver
 
 
 class TaxoCSVError(Exception):
@@ -36,7 +36,6 @@ class UnicodeDictReader(csv.DictReader):
         row = csv.DictReader.next(self)
         for key in row.keys():
             row[key] = unicode(row[key], self.encoding)
-
         return row
 
 
@@ -107,10 +106,10 @@ class CSVTaxonomyParser:
         # Create a Taxon object for the root of the taxonomy.
         rootrank, rootname, roottaxo_id = self.tc.getRootSettings()
         taxonomyroot = Taxon(taxonomyid, rankt.getID(rootrank, ranksys), rankt, 0, rootname, roottaxo_id, True)
-        #print taxonomyroot
+        #print(taxonomyroot)
 
         # Open and parse the input CSV file.
-        with open(inputcsv, 'rU') as fin:
+        with open(inputcsv, 'r') as fin:
             reader = UnicodeDictReader(fin, encoding=charencoding)
             self._readCSVRows(reader, taxonomyroot, ranktoCSV, rankt)
 
@@ -152,8 +151,12 @@ class CSVTaxonomyParser:
         """
         Applies any column value transformations that were defined in the configuration file.
         """
-        for colname, regex in self.transforms.iteritems():
-            row[colname] = regex.sub('', row[colname])
+        try:
+            for colname, regex in self.transforms.iteritems():
+                row[colname] = regex.sub('', row[colname])
+        except:
+            for colname, regex in self.transforms.items():
+                row[colname] = regex.sub('', row[colname])
 
     def _addSynonyms(self, taxon, row):
         """
@@ -251,8 +254,8 @@ class CSVTaxonomyParser:
                         namestr = row[ranktoCSV[rankid]].strip()
                         if (rankid == sp_rankid) and parse_subsp:
                             namestr = self._extractSpecies(namestr)
-                except KeyError as e:
-                    raise TaxoCSVError('The column "' + e.args[0] + '" was not found in the taxonomy CSV file.')
+                 except KeyError as e:
+                     raise TaxoCSVError('The column "' + e.args[0] + '" was not found in the taxonomy CSV file.')
 
                 if namestr != '':
                     # Clean up the name string.

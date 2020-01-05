@@ -8,9 +8,9 @@ function, similar to the way the TaxonVisitor child classes for name resolution
 are organized.
 """
 
-from taxonvisitor import TaxonVisitor
+from taxolib.taxonvisitor import TaxonVisitor
 import sys
-from csvtaxonomy import UnicodeDictWriter
+from taxolib.csvtaxonomy import UnicodeDictWriter
 
 
 class PrintTaxonVisitor(TaxonVisitor):
@@ -18,10 +18,10 @@ class PrintTaxonVisitor(TaxonVisitor):
     Prints a simple text representation of a taxon tree.
     """
     def processTaxon(self, taxon, depth):
-        print '   ' * depth + taxon.__str__()
+        print('   ' * depth + taxon.__str__())
         synstr = taxon.getSynonymsString()
         if synstr != '':
-            print '   ' * depth + '  -- Synonyms: ' + synstr
+            print('   ' * depth + '  -- Synonyms: ' + synstr)
 
 
 class RankAccumulatorTaxonVisitor(TaxonVisitor):

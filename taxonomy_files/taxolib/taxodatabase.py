@@ -1,8 +1,11 @@
 
 #import psycopg2 as ppg2
 import sqlite3
-from ConfigParser import RawConfigParser
-from taxoconfig import ConfigError
+try:
+    from ConfigParser import RawConfigParser #python2
+except:
+    from configparser import RawConfigParser #python3
+from taxolib.taxoconfig import ConfigError
 
 
 def _getPostgresDBCursor(conffile):

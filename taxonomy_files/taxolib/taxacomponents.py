@@ -56,8 +56,12 @@ class RankTable:
         lookup failed.
         """
         for ranksys in self.namestoIDs.keys():
-            if rankid in self.namestoIDs[ranksys].itervalues():
-                return ranksys
+            try:
+               if rankid in self.namestoIDs[ranksys].itervalues():
+                   return ranksys
+            except:
+               if rankid in self.namestoIDs[ranksys].items():
+                   return ranksys
 
         return None
 
@@ -497,7 +501,7 @@ class Taxon:
             taxo_id = self.taxonomy_id
 
         if printprogress and (self.depth - rootdepth) == 1:
-            print 'Processing ' + self._getRankNameString() + ' and its descendents...'
+            print('Processing ' + self._getRankNameString() + ' and its descendents...')
 
         tc_id = self.existsInDB(pgcur)
 

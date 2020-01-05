@@ -1,5 +1,8 @@
 
-from ConfigParser import RawConfigParser
+try:
+    from ConfigParser import RawConfigParser #python2
+except:
+    from configparser import RawConfigParser #python3
 import os.path as path
 import re
 
@@ -149,7 +152,6 @@ class TaxonomyConfig(RawConfigParser):
             encoding = self.get('main', 'encoding')
         else:
             encoding = 'utf-8'
-
         return (ranksys, inputcsv, encoding)
 
     def getAcceptFilter(self):

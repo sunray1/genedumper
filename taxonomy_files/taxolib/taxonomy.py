@@ -4,10 +4,10 @@ the taxacomponents module.
 """
 
 
-from taxacomponents import Citation, RankTable, Taxon
-from taxonvisitor import TaxonVisitor
-from taxonvisitors_concrete import PrintTaxonVisitor, CSVTaxonVisitor
-from nameresolve import CoLNamesResolver
+from taxolib.taxacomponents import Citation, RankTable, Taxon
+from taxolib.taxonvisitor import TaxonVisitor
+from taxolib.taxonvisitors_concrete import PrintTaxonVisitor, CSVTaxonVisitor
+from taxolib.nameresolve import CoLNamesResolver
 
 
 class TaxonomyError(Exception):
@@ -92,9 +92,9 @@ class TaxonomyBase:
         """
         Prints the metadata that describes this taxonomy.
         """
-        print '** Taxonomy information **'
-        print str(self)
-        print str(self.citation)
+        print('** Taxonomy information **')
+        print(str(self))
+        print(str(self.citation))
 
     def printCSVTaxaTree(self, numtaxa=-1, maxdepth=-1):
         """
@@ -103,9 +103,9 @@ class TaxonomyBase:
         the taxa tree will only be traversed to a depth of maxdepth.
         """
         if numtaxa > 0:
-            print '(Only printing first', numtaxa, 'taxa.)'
+            print('(Only printing first', numtaxa, 'taxa.)')
         if maxdepth > -1:
-            print '(Only traversing taxa tree to a depth of ' + str(maxdepth) + '.)'
+            print('(Only traversing taxa tree to a depth of ' + str(maxdepth) + '.)')
 
         csvvisitor = CSVTaxonVisitor(numtaxa, maxdepth)
         csvvisitor.visit(self.roottaxon)
@@ -116,11 +116,11 @@ class TaxonomyBase:
         taxa will be printed.  If maxdepth > -1, the taxa tree will only be traversed to a
         depth of maxdepth.
         """
-        print '** Taxa tree **'
+        print('** Taxa tree **')
         if numtaxa > 0:
-            print '(Only printing first', numtaxa, 'taxa.)'
+            print('(Only printing first', numtaxa, 'taxa.)')
         if maxdepth > -1:
-            print '(Only traversing taxa tree to a depth of ' + str(maxdepth) + '.)'
+            print('(Only traversing taxa tree to a depth of ' + str(maxdepth) + '.)')
 
         ptvisitor = PrintTaxonVisitor(numtaxa, maxdepth)
         ptvisitor.visit(self.roottaxon)

@@ -1,6 +1,12 @@
 
-import urllib, urllib2
-from BaseHTTPServer import BaseHTTPRequestHandler
+try:
+    import urllib, urllib.request, urllib.error
+except:
+    import urllib, urllib2
+try:
+    from BaseHTTPServer import BaseHTTPRequestHandler
+except:
+    from http.server import BaseHTTPRequestHandler
 import socket
 import json
 import xml.etree.ElementTree as et
@@ -192,7 +198,7 @@ class NamesResolver(TaxonVisitor):
 
                 retries += 1
                 if retries > self.maxretries:
-                    print 'Connection attempt failed; maximum retries exceeded.'
+                    print('Connection attempt failed; maximum retries exceeded.')
                     # Pass the exception on to the caller.  Handle timeout errors by only
                     # passing on a socket.timeout object so that client code doesn't have
                     # to deal with multiple timeout error types.
@@ -207,20 +213,20 @@ class NamesResolver(TaxonVisitor):
                     if err.code == 404 and not(self.retry404):
                         raise
                     else:
-                        print 'HTTP error ' + str(err.code) + ': ' + self.HTTPresponses[err.code][0] + '.'
+                        print('HTTP error ' + str(err.code) + ': ' + self.HTTPresponses[err.code][0] + '.')
                 elif gottimeout:
-                    print 'Connection error: connection attempt timed out.'
+                    print('Connection error: connection attempt timed out.')
                     # Keep track of the number of timeout failures so that the timeout limit
                     # can be properly adjusted.
                     timeoutfailures += 1
                     print ('Increasing socket timeout limit to ' +
                             str(self.timeout * (self.timeoutfactor**timeoutfailures)) + ' seconds.')
                 elif type(err) is socket.error:
-                    print 'TCP socket error:', err
+                    print('TCP socket error:', err)
                 else:
-                    print 'Connection error:', err.reason
+                    print('Connection error:', err.reason)
 
-                print 'Retrying request in ' + str(self.retrydelay) + ' seconds.'
+                print('Retrying request in ' + str(self.retrydelay) + ' seconds.')
                 time.sleep(self.retrydelay)
     
         return res
@@ -447,7 +453,7 @@ class ZoobankNamesResolver(NamesResolver):
             authorprint = authorinfo['authorstr']
             if authorinfo['hasparens']:
                 authorprint = '(' + authorprint + ')'
-            print '  Found match:', match[1], authorprint
+            print('  Found match:', match[1], authorprint)
 
             # See if Zoobank contains detailed publication information.
             # Frustratingly, Zoobank stores publication DOIs but does not return them as
@@ -464,7 +470,7 @@ class ZoobankNamesResolver(NamesResolver):
                     #pprint.pprint(rjson)
                     # Get the full citation string.
                     fullcite = self.cleanCiteString(rjson[0]['value'])
-                    print fullcite
+                    print(fullcite)
                 except socket.timeout as e:
                     # Keep track of failed IDs so we don't waste time on them later.
                     self.failedrefIDs.append(match[0]['OriginalReferenceUUID'])
@@ -495,10 +501,10 @@ class ZoobankNamesResolver(NamesResolver):
             # Consider this a lookup "success" so that we recurse to the next level,
             # even though lookup was skipped for this taxon.
             self.last_lookup_succeeded = True
-            print 'Skipping "' + taxon.name.namestr + '"; citation data already in database.'
+            print('Skipping "' + taxon.name.namestr + '"; citation data already in database.')
             return
 
-        print 'Attempting to resolve:', taxon.name.namestr
+        print('Attempting to resolve:', taxon.name.namestr)
         sys.stdout.flush()
 
         # Search for this species' name in Zoobank, including name variants if it has a
@@ -621,10 +627,10 @@ class CoLNamesResolver(NamesResolver):
         # See if we should skip this taxon because its name already exists in the
         # database and has citation data.
         if self._checkExistingCiteData(taxon):
-            print 'Skipping "' + taxon.name.namestr + '"; citation data already in database.'
+            print('Skipping "' + taxon.name.namestr + '"; citation data already in database.')
             return
 
-        print 'Attempting to resolve:', taxon.name.namestr
+        print('Attempting to resolve:', taxon.name.namestr)
 
         # Search for this species' name in CoL, including name variants if it has a
         # subgenus designation.
@@ -645,7 +651,7 @@ class CoLNamesResolver(NamesResolver):
         authorprint = authorinfo['authorstr']
         if authorinfo['hasparens']:
             authorprint = '(' + authorprint + ')'
-        print '  Found match:', sname, authorprint
+        print('  Found match:', sname, authorprint)
         taxon.name.updateCitation(None, authorinfo['authorstr'])
         taxon.setUseParens(authorinfo['hasparens'])
 
