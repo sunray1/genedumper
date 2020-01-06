@@ -30,7 +30,7 @@ def get_seqs_from_sqldb(accset, seqtype, blastdb):
     from Bio.Seq import Seq
     conn = sqlite3.connect(blastdb)
     c = conn.cursor()
-    accset = str(accset).replace("{", "(").replace("}", ")")
+    accset = str(list(accset)).replace("{", "(").replace("}", ")").replace("[", "(").replace("]", ")")
     for iter in c.execute("SELECT accession, "+ seqtype +" FROM blast WHERE accession IN "+ accset +";"):
         record = SeqRecord(Seq(str(iter[1])), id = iter[0],  description = "")
         yield(record)
