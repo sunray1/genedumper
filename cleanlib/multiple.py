@@ -122,7 +122,7 @@ def resolve_seqs(blastdb, email):
                 whole_length = 0
                 #do tiling
                 for m in [x.split('_')[0] for x in individual]:
-                    idens, start_stop = tiling([m], 'COI_trnL_COII', email, blastdb, c)
+                    idens, start_stop = tiling([m], 'COI_trnL_COII', blastdb, c)
                     start, end = start_stop[0]
                     #uses gi for danaus chrysippus 
                     for iden in idens:
