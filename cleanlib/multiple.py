@@ -219,7 +219,7 @@ def resolve_seqs(blastdb, email):
         GIlist = []
         for n in dic[i]:
             GIlist.append(n.split("_")[0])
-        dic[i] = resolve_seqs(GIlist, email, blastdb)
+        dic[i] = resolve_seqs(GIlist, blastdb)
         print(str(round((float(count)/float(len(dic)))*100, 2)) + "%")
         count += 1
     #splits the ones that still have multiple (so the longest had multiple choices) and the ones that are resolved
