@@ -93,7 +93,7 @@ class edit():
 			row['tc_id'] = 0
 			row['Name_num'] = self.basename + "_" + str(num)
 			row['Decision'] = decision
-			if evalue < 0.001:
+			if evalue < 0.001 and decision != "delete":
 				writer.writerow(row)
 				
 #referenced in above function
@@ -146,7 +146,7 @@ def pull_names(defstr, accession, origGI, taxdb):
 	# if boolian = True:
 	# sometimes definitions look like 'PREDICTED: Genus Species'
 	if accession[0] == "X" and accession[2] == "_":
-		decision = "Predicted species/not chosen"
+		decision = "delete"
 
 	try:
 		genus = species.split()[0].replace("'", "")
