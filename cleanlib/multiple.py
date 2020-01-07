@@ -95,7 +95,7 @@ def resolve_seqs(blastdb, email):
         mito = [dic_COI[i][x] for x, l in enumerate(lengths) if l > 3000]
         if len(mito) > 0:
             mitoinGI = [mito[0].split("_")[0]]
-            iterator = get_seqs_from_sqldb_GI(mitoinGI, "hseq", blastdb)
+            iterator = get_seqs_from_sqldb_GI(mitoinGI, "hseq", blastdb, c)
             for seq in iterator:
                 records.append(seq)
             c.execute("UPDATE blast SET Decision='Mito or chloro sequence/Chosen' WHERE GI='" + mitoinGI[0] + "';")
@@ -219,7 +219,7 @@ def resolve_seqs(blastdb, email):
         GIlist = []
         for n in dic[i]:
             GIlist.append(n.split("_")[0])
-        dic[i] = resolve_seqs(GIlist, blastdb)
+        dic[i] = resolve_seqs(GIlist, blastdb, gene, c)
         print(str(round((float(count)/float(len(dic)))*100, 2)) + "%")
         count += 1
     #splits the ones that still have multiple (so the longest had multiple choices) and the ones that are resolved
