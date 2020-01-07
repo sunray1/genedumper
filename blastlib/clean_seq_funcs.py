@@ -13,12 +13,12 @@ from cleanlib.databasing import get_seqs_from_sqldb_GI
 import itertools
 muscle_cline = MuscleCommandline(clwstrict=True)
 
-def resolve_seqs(list_of_GIs, blastdb):
+def resolve_seqs(list_of_GIs, blastdb, gene, c):
     #give a list of GIs, checks the amount DNA/length, returns list of max
     joined_GIs = ",".join(list_of_GIs)
     amount_DNA = []
     length_DNA = []
-    iterator = get_seqs_from_sqldb_GI(list_of_GIs, "hseq", blastdb)
+    iterator = get_seqs_from_sqldb_GI(list_of_GIs, "hseq", blastdb, gene, c)
     for seq_record in iterator:
         amount_DNA.append(seq_record.seq.count("A")+seq_record.seq.count("T")+seq_record.seq.count("C")+seq_record.seq.count("G"))
         length_DNA.append(len(seq_record))
@@ -36,20 +36,20 @@ def resolve_seqs(list_of_GIs, blastdb):
         GI_to_pick = [list_of_GIs[i] for i, x in enumerate(sums) if x == max(sums)]
     return(GI_to_pick)
 
-def alignment_reg(align_GIs, blastdb, qseqbool):
+def alignment_reg(align_GIs, blastdb, qseqbool, c):
     #qseqbool is a boolian that says whether or not the first GI is a qseq or not
     seqs = []
     if qseqbool == True:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb, c)
         handle_string = StringIO()
         for seq in iterator:
             seqs.append(seq)
-        iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb, c)
         handle_string = StringIO()
         for seq in iterator:
             seqs.append(seq)
     if qseqbool == False:
-        iterator = get_seqs_from_sqldb_GI(align_GIs, "hseq", blastdb)
+        iterator = get_seqs_from_sqldb_GI(align_GIs, "hseq", blastdb, c)
         handle_string = StringIO()
         for seq in iterator:
             seqs.append(seq)
@@ -76,17 +76,17 @@ def identity_calc(align):
         iden = 100*(count/float((len(align[0])-gaps)))
     return(iden)
 
-def alignment_rev_comp(align_GIs, blastdb, qseqbool):
+def alignment_rev_comp(align_GIs, blastdb, qseqbool, c):
     #qseqbool is a boolian that says whether or not the first GI is a qseq or not
     seqs = []
     if qseqbool == True:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb, c)
     if qseqbool == False:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb, c)
     handle_string = StringIO()
     for seq in iterator:
         seqs.append(seq.reverse_complement())
-    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb)
+    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb, c)
     handle_string = StringIO()
     for seq in iterator:
         seqs.append(seq)
@@ -96,20 +96,20 @@ def alignment_rev_comp(align_GIs, blastdb, qseqbool):
     align = AlignIO.read(StringIO(stdout), "clustal")
     return(align)
 
-def alignment_comp(align_GIs, blastdb, qseqbool):
+def alignment_comp(align_GIs, blastdb, qseqbool, c):
     #qseqbool is a boolian that says whether or not the first GI is a qseq or not
     seqs = []
     if qseqbool == True:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb, c)
     if qseqbool == False:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb, c)
     handle_string = StringIO()
     for seq in iterator:
         seq_comp = SeqRecord(seq.seq.complement())
         seq_comp.id = seq.id
         seq_comp.description = seq.description
         seqs.append(seq_comp)
-    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb)
+    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb, c)
     handle_string = StringIO()
     for seq in iterator:
         seqs.append(seq)
@@ -303,15 +303,15 @@ def tiling(list_of_GIs_local, gene, blastdb, c):
         GIs_to_align = [qseqGI, m]
         #need to change this
         idens_for_ind = []
-        alignment = alignment_reg(GIs_to_align, blastdb, True)
+        alignment = alignment_reg(GIs_to_align, blastdb, True, c)
         iden = identity_calc(alignment)
         idens_for_ind.append(iden)
         if iden < 70:
-            alignment = alignment_rev_comp(GIs_to_align, blastdb, True)
+            alignment = alignment_rev_comp(GIs_to_align, blastdb, True, c)
             iden = identity_calc(alignment)
             idens_for_ind.append(iden)
             if iden < 70: 
-                alignment = alignment_comp(GIs_to_align, blastdb, True)
+                alignment = alignment_comp(GIs_to_align, blastdb, True, c)
                 iden = identity_calc(alignment)
                 idens_for_ind.append(iden)
         span = 0
