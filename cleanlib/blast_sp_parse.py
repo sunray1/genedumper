@@ -70,41 +70,45 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
                 #     pass
                 # else:
                 #     hitdic[str(alignment.title.split("|")[1])] = identity
-            maxiden = max(hitdic.values())
-            try:
-                hitGIs = [GI for GI, iden in hitdic.iteritems() if iden == maxiden] #python2
-            except:
-                hitGIs = [GI for GI, iden in hitdic.items() if iden == maxiden] #python3
-            for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + queryGI + "'"):
-                querySp = (str(iter[0]))
-            for i in hitGIs:
-                for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + i + "'"):
-                    hitSp.add(str(iter[0]))
-            #only look at top 5 if it doesnt hit the top hit - faster
-            #sort hitdic by idens
-            if querySp not in hitSp:
-                hitSp = set()
-                if len(hitdic.values()) > 5:
-                    maxiden = sorted(hitdic.values(), reverse = True)[0:5]
-                else:
-                    maxiden = hitdic.values()
+            if len(hitdic.values()) == 0:
+                print('No matching hits from blast')
+                pass
+            else:
+                maxiden = max(hitdic.values())
                 try:
-                    hitGIs = [GI for GI, iden in hitdic.iteritems() if iden in maxiden] #python2
+                    hitGIs = [GI for GI, iden in hitdic.iteritems() if iden == maxiden] #python2
                 except:
-                    hitGIs = [GI for GI, iden in hitdic.items() if iden in maxiden] #python3
-                #get hit species (actually tc_ids)
+                    hitGIs = [GI for GI, iden in hitdic.items() if iden == maxiden] #python3
+                for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + queryGI + "'"):
+                    querySp = (str(iter[0]))
                 for i in hitGIs:
                     for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + i + "'"):
                         hitSp.add(str(iter[0]))
-                #if species of query not in the list of hit species
+                #only look at top 5 if it doesnt hit the top hit - faster
+                #sort hitdic by idens
                 if querySp not in hitSp:
-                    error_dic[querySp] = queryGI
+                    hitSp = set()
+                    if len(hitdic.values()) > 5:
+                        maxiden = sorted(hitdic.values(), reverse = True)[0:5]
+                    else:
+                        maxiden = hitdic.values()
+                    try:
+                        hitGIs = [GI for GI, iden in hitdic.iteritems() if iden in maxiden] #python2
+                    except:
+                        hitGIs = [GI for GI, iden in hitdic.items() if iden in maxiden] #python3
+                    #get hit species (actually tc_ids)
+                    for i in hitGIs:
+                        for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + i + "'"):
+                            hitSp.add(str(iter[0]))
+                    #if species of query not in the list of hit species
+                    if querySp not in hitSp:
+                        error_dic[querySp] = queryGI
+                    else:
+                        c.execute("UPDATE blast SET decision='Longest or most info, good top hit/chosen' WHERE GI='" + queryGI + "';")
+                        finalseqs.add(queryGI)
                 else:
                     c.execute("UPDATE blast SET decision='Longest or most info, good top hit/chosen' WHERE GI='" + queryGI + "';")
                     finalseqs.add(queryGI)
-            else:
-                c.execute("UPDATE blast SET decision='Longest or most info, good top hit/chosen' WHERE GI='" + queryGI + "';")
-                finalseqs.add(queryGI)
     count = 0
     #error_dic is dictionary that has species = GI that doesn't match species when self blast
     #error_dic['21204'] = '316994286'
