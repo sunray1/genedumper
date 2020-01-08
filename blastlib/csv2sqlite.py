@@ -102,7 +102,7 @@ def _guess_types(fileobj, max_sample_size=100):
                 if colresult[_type] == count + 1:
                     types[idx] = _type
             except:
-                sys.exit("Error: no data in .csv file")
+                pass
 
     return types
 
