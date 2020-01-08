@@ -341,7 +341,6 @@ def get_blast_query(taxonomy):
         #print(count)
     family_orgs = ["(" + i + "[Organism])" for i in family_ranks]
     query = " OR ".join(family_orgs)
-    print(query)
     return(query)
 
 
