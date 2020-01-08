@@ -8,7 +8,7 @@ except ImportError:
 from Bio.Align.Applications import MuscleCommandline
 from Bio.SeqRecord import SeqRecord
 from Bio.Blast import NCBIWWW, NCBIXML
-from cleanlib.databasing import get_seqs_from_sqldb_GI
+from cleanlib.databasing import get_seqs_from_sqldb_GI, export_fasta, local_blast
 
 import itertools
 muscle_cline = MuscleCommandline(clwstrict=True)
