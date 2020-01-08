@@ -12,6 +12,7 @@ try:
 except ImportError:
     from io import StringIO ## for Python 3
 from blastlib.clean_seq_funcs import alignment_comp, alignment_reg, alignment_rev_comp, blast, identity_calc, tiling
+from cleanlib.databasing import get_seqs_from_sqldb_GI, export_fasta, local_blast
 
 def cluster(blastdb, taxdb, email):
     Entrez.email = email
@@ -43,28 +44,19 @@ def cluster(blastdb, taxdb, email):
     
     for i in multiple_dic:
         identities = []
-        joined_GIs = ",".join(multiple_dic[i])
-        handle = Entrez.efetch(db="nucleotide", rettype="fasta", retmode="text", id=joined_GIs)
-        seqs =  SeqIO.parse(handle, "fasta")
-        handle_string = StringIO()
-        SeqIO.write(seqs, handle_string, "fasta")
-        data = handle_string.getvalue()
-        stdout, stderr = muscle_cline(stdin=data)
-        align = AlignIO.read(StringIO(stdout), "clustal")
+        #get consensus of all
+        for iter in c.execute("SELECT Gene_name FROM blast WHERE GI = '"+ multiple_dic[i][0] +"';"):
+            gene = str(iter[0])
+        align = alignment_reg(multiple[i], blastdb, "False", gene, c)
         summary_align = AlignInfo.SummaryInfo(align)
         consensus = summary_align.gap_consensus(threshold=.5, ambiguous='N')
         consensus_record = SeqRecord(consensus, id="Consensus_all")
         for m in multiple_dic[i]:
-            error = True
-            while error == True:
-                try:
-                    handle = Entrez.efetch(db="nucleotide", rettype="fasta", retmode="text", id=m)
-                    error = False
-                except:
-                    print('Error, trying again')
-                    time.sleep(10)
-            seqs =  SeqIO.read(handle, "fasta")
+            #align each gene to consensus
+            iterator = get_seqs_from_sqldb_GI(m, "hseq", blastdb, gene, c)
             handle_string = StringIO()
+            for seq in iterator:
+                seqs.append(seq)
             SeqIO.write(seqs, handle_string, "fasta")
             SeqIO.write(consensus_record, handle_string, "fasta")
             data = handle_string.getvalue()
@@ -91,22 +83,24 @@ def cluster(blastdb, taxdb, email):
     for i in two_dic:
         #align the two seqs
         list_of_GIs = two_dic[i]
-        alignment = alignment_reg(list_of_GIs, email)
+        for iter in c.execute("SELECT Gene_name FROM blast WHERE GI = '"+ list_of_GIs[0] +"';"):
+            gene = str(iter[0])
+        alignment = alignment_reg(list_of_GIs, blastdb, "False", gene, c)
         iden = identity_calc(alignment)
         if iden < 95:
 #            print("Low Aligned Identity: " + str(iden))
-            alignment = alignment_rev_comp(list_of_GIs, email)
+            alignment = alignment_rev_comp(list_of_GIs, blastdb, "False", gene, c)
             iden = identity_calc(alignment)
             if iden < 95: 
     #get taxonomy for query(main species)
  #               print("Low Reverse Complement Aligned Identity: " + str(iden))
-                alignment = alignment_comp(list_of_GIs, email)
+                alignment = alignment_comp(list_of_GIs, blastdb, "False", gene, c)
                 iden = identity_calc(alignment)
                 if iden < 95:
  #                   print("Low Complement Aligned Identity: " + str(iden))
             #add tiling thing
                     gene_name = '_'.join(i.split('_')[1:])
-                    idens, start_stop = tiling(list_of_GIs, gene_name, email)
+                    idens, start_stop = tiling(list_of_GIs, gene_name, blastdb, c)
                     current_start = -1
                     current_stop = -1 
                     result = []
@@ -129,6 +123,8 @@ def cluster(blastdb, taxdb, email):
                     else: 
             #get taxonomy for query(main species)
                         print("Parsing taxonomy for error sequences")
+                        
+                        ###here - is i tc_id or num_name?
                         hits = blast(i, list_of_GIs, c, taxdb)
                         #if theres only one lowest taxonomy hit, change
                         if hits.count(min(hits)) == 1:
