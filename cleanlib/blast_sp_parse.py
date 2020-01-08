@@ -31,7 +31,7 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
     for iter in c.execute("SELECT accession FROM blast WHERE Gene_name = '"+ gene +"';"):
         access_list.add(str(iter[0]))
     #print(len(access_list))
-    iterator = get_seqs_from_sqldb(access_list, "hseq", blastdb)
+    iterator = get_seqs_from_sqldb(access_list, "hseq", blastdb, c)
     export_fasta(iterator, gene+"_db.fa")
     create_blast_db(gene+"_db.fa")
     local_blast(gene+"_db.fa", infile)
