@@ -95,7 +95,7 @@ def resolve_seqs(blastdb, email):
         mito = [dic_COI[i][x] for x, l in enumerate(lengths) if l > 3000]
         if len(mito) > 0:
             mitoinGI = [mito[0].split("_")[0]]
-            iterator = get_seqs_from_sqldb_GI(mitoinGI, "hseq", blastdb, c)
+            iterator = get_seqs_from_sqldb_GI(mitoinGI, "hseq", blastdb, 'COI_trnL_COI', c)
             for seq in iterator:
                 records.append(seq)
             c.execute("UPDATE blast SET Decision='Mito or chloro sequence/Chosen' WHERE GI='" + mitoinGI[0] + "';")
