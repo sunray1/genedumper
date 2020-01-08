@@ -48,20 +48,28 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
             print(str(round(float(count)/float(numqueries)*100, 2))+ "%")
 #figure out a new way to do this
             queryAcc = str(rec.query.split()[0])
+            #this broke when ncbi updated
             for iter in c.execute("SELECT GI FROM blast WHERE accession='" + queryAcc + "';"):
                 queryGI = (str(iter[0]))
-            #hitdic is GIs and idens of all in .xml
+            #print(queryGI)
+            #hitdic is GIs and idens of all in .xml for each rec in blast_rec
             hitdic = {}
             hitSp = set()
             for alignment in rec.alignments:
                 for hsp in alignment.hsps:
                     identity=float(hsp.identities)/float(hsp.align_length)
                     #print(identity)
-                if alignment.title.split("|")[1] == queryGI:
+                if alignment.hit_def == queryAcc:
                     pass
                 else:
-                    hitdic[str(alignment.title.split("|")[1])] = identity
-            #print(hitdic)
+                    for iter in c.execute("SELECT GI FROM blast WHERE accession='" + alignment.hit_def + "'"):
+                        hitGI = (str(iter[0]))
+                    
+                    hitdic[str(hitGI)] = identity
+                # if alignment.title.split("|")[1] == queryGI:
+                #     pass
+                # else:
+                #     hitdic[str(alignment.title.split("|")[1])] = identity
             maxiden = max(hitdic.values())
             try:
                 hitGIs = [GI for GI, iden in hitdic.iteritems() if iden == maxiden] #python2
