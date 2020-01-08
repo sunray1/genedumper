@@ -129,15 +129,15 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
         #print(other_GIs)
         for x, GI in enumerate(other_GIs):
             GI_pair = [first_GI, GI]
-            alignment = alignment_reg(GI_pair, blastdb, False)
+            alignment = alignment_reg(GI_pair, blastdb, False, c)
             iden = identity_calc(alignment)
             if iden < 90:
 #                print("Low Aligned Identity: " + str(iden))
-                alignment = alignment_rev_comp(GI_pair, blastdb, False)
+                alignment = alignment_rev_comp(GI_pair, blastdb, False, c)
                 iden = identity_calc(alignment)
                 if iden < 90: 
 #                    print("Low Reverse Complement Aligned Identity: " + str(iden))
-                    alignment = alignment_comp(GI_pair, blastdb, False)
+                    alignment = alignment_comp(GI_pair, blastdb, False, c)
                     iden = identity_calc(alignment)
                     if iden < 90:
 #                        print("Low Complement Aligned Identity: " + str(iden))
