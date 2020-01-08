@@ -191,11 +191,7 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
     if len(seqs_to_blast) > 0:
         print("Blasting error sequences (seqs do not align together and one doesn't align to whole)")        
         seqs_to_blast_flat = [item for sublist in seqs_to_blast for item in sublist]
-        try:
-            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email, taxdb)
-        except:
-            time.sleep(5)
-            hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, email, taxdb)
+        hits_all = blast_all(seqs_to_blast_flat, blast_dic_nums, blast_dic_tcids, c, gene, taxdb, blastdb)
 #        print(hits_all)
         print("Parsing taxonomy for error sequences")
         for x, list_of_GIs in enumerate(seqs_to_blast):
@@ -217,7 +213,7 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
                         index_pos.append(count)
                     count+=1
                 mult_GIs = [list_of_GIs[x] for x in index_pos]
-                GI_to_pick = resolve_seqs(mult_GIs)
+                GI_to_pick = resolve_seqs(mult_GIs, blastdb, gene, c)
                 #if theres only one chosen and it wasnt the one already picked...add to change dic
                 if len(GI_to_pick) == 1 and error_dic[tc_id]!=GI_to_pick[0]:
                     finalseqs.add(GI_to_pick[0])
@@ -231,6 +227,7 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
 #                    print("Multiple choices: " + str(GI_to_pick))
                     multseqs.append(error_dic[tc_id])
                     #Go to cluster analysis
+
             
     print('length of resolved=' + str(len(finalseqs)))
     print('length of not resolved = ' + str(len(multseqs)))
