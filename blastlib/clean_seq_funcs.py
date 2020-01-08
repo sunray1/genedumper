@@ -36,20 +36,20 @@ def resolve_seqs(list_of_GIs, blastdb, gene, c):
         GI_to_pick = [list_of_GIs[i] for i, x in enumerate(sums) if x == max(sums)]
     return(GI_to_pick)
 
-def alignment_reg(align_GIs, blastdb, qseqbool, c):
+def alignment_reg(align_GIs, blastdb, qseqbool, gene, c):
     #qseqbool is a boolian that says whether or not the first GI is a qseq or not
     seqs = []
     if qseqbool == True:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb, c)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb, gene, c)
         handle_string = StringIO()
         for seq in iterator:
             seqs.append(seq)
-        iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb, c)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb, gene, c)
         handle_string = StringIO()
         for seq in iterator:
             seqs.append(seq)
     if qseqbool == False:
-        iterator = get_seqs_from_sqldb_GI(align_GIs, "hseq", blastdb, c)
+        iterator = get_seqs_from_sqldb_GI(align_GIs, "hseq", blastdb, gene, c)
         handle_string = StringIO()
         for seq in iterator:
             seqs.append(seq)
@@ -76,17 +76,17 @@ def identity_calc(align):
         iden = 100*(count/float((len(align[0])-gaps)))
     return(iden)
 
-def alignment_rev_comp(align_GIs, blastdb, qseqbool, c):
+def alignment_rev_comp(align_GIs, blastdb, qseqbool, gene, c):
     #qseqbool is a boolian that says whether or not the first GI is a qseq or not
     seqs = []
     if qseqbool == True:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb, c)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb, gene, c)
     if qseqbool == False:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb, c)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb, gene, c)
     handle_string = StringIO()
     for seq in iterator:
         seqs.append(seq.reverse_complement())
-    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb, c)
+    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb, gene, c)
     handle_string = StringIO()
     for seq in iterator:
         seqs.append(seq)
@@ -96,20 +96,20 @@ def alignment_rev_comp(align_GIs, blastdb, qseqbool, c):
     align = AlignIO.read(StringIO(stdout), "clustal")
     return(align)
 
-def alignment_comp(align_GIs, blastdb, qseqbool, c):
+def alignment_comp(align_GIs, blastdb, qseqbool, gene, c):
     #qseqbool is a boolian that says whether or not the first GI is a qseq or not
     seqs = []
     if qseqbool == True:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb, c)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "qseq", blastdb, gene, c)
     if qseqbool == False:
-        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb, c)
+        iterator = get_seqs_from_sqldb_GI(align_GIs[:1], "hseq", blastdb, gene, c)
     handle_string = StringIO()
     for seq in iterator:
         seq_comp = SeqRecord(seq.seq.complement())
         seq_comp.id = seq.id
         seq_comp.description = seq.description
         seqs.append(seq_comp)
-    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb, c)
+    iterator = get_seqs_from_sqldb_GI(align_GIs[1:], "hseq", blastdb, gene, c)
     handle_string = StringIO()
     for seq in iterator:
         seqs.append(seq)
