@@ -289,15 +289,15 @@ def tiling(list_of_GIs_local, gene, blastdb, c):
         GIs_to_align = [qseqGI, m]
         #need to change this
         idens_for_ind = []
-        alignment = alignment_reg(GIs_to_align, blastdb, True, c)
+        alignment = alignment_reg(GIs_to_align, blastdb, True, gene, c)
         iden = identity_calc(alignment)
         idens_for_ind.append(iden)
         if iden < 70:
-            alignment = alignment_rev_comp(GIs_to_align, blastdb, True, c)
+            alignment = alignment_rev_comp(GIs_to_align, blastdb, True, gene, c)
             iden = identity_calc(alignment)
             idens_for_ind.append(iden)
             if iden < 70: 
-                alignment = alignment_comp(GIs_to_align, blastdb, True, c)
+                alignment = alignment_comp(GIs_to_align, blastdb, True, gene, c)
                 iden = identity_calc(alignment)
                 idens_for_ind.append(iden)
         span = 0
