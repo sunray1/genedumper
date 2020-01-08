@@ -334,12 +334,14 @@ def get_blast_query(taxonomy):
     count = 100
     family_ranks = []
     #right now this just gets the families, but can be edited so can choose ranks
-    while count > 50:
-        for iter in c.execute("SELECT n.namestr FROM names n, names_to_taxonconcepts ntt, taxon_concepts tc, ranks r WHERE ntt.name_id = n.name_id AND ntt.tc_id = tc.tc_id AND tc.rank_id = r.rank_id AND r.namestr = 'Family'"):
-            family_ranks.append(str(iter[0]))
-        count = len(family_ranks)
+    #while count > 50:
+    for iter in c.execute("SELECT n.namestr FROM names n, names_to_taxonconcepts ntt, taxon_concepts tc, ranks r WHERE ntt.name_id = n.name_id AND ntt.tc_id = tc.tc_id AND tc.rank_id = r.rank_id AND r.namestr = 'Family'"):
+        family_ranks.append(str(iter[0]))
+        #count = len(family_ranks)
+        #print(count)
     family_orgs = ["(" + i + "[Organism])" for i in family_ranks]
     query = " OR ".join(family_orgs)
+    print(query)
     return(query)
 
 
