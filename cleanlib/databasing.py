@@ -9,7 +9,7 @@ def get_seqs_from_sqldb_GI(GIset, seqtype, blastdb, gene, c):
     from Bio.Seq import Seq
     GIset = str(GIset).replace("[", "(").replace("]", ")")
     if seqtype == "hseq":
-	sql = "SELECT accession, "+ seqtype +" FROM blast WHERE Gene_name = '" + gene + "' AND GI IN "+ GIset +";"
+        sql = "SELECT accession, "+ seqtype +" FROM blast WHERE Gene_name = '" + gene + "' AND GI IN "+ GIset +";"
         for iter in c.execute(sql):
             record = SeqRecord(Seq(str(iter[1])), id = iter[0],  description = "")
             yield(record)
