@@ -11,6 +11,6 @@ def find_id(taxonomy, blastfile):
 		c.execute("ALTER TABLE blast ADD tc_id int")
 	except:
 		pass
-	c.execute("UPDATE blast SET tc_id = (SELECT tc.tc_id FROM taxon_concepts tc, names_to_taxonconcepts ntt, names n WHERE tc.tc_id = ntt.tc_id AND ntt.name_id = n.name_id AND n.namestr = blast.Species);")
+	c.execute("UPDATE blast SET tc_id = (SELECT tc.tc_id FROM taxon_concepts tc, names_to_taxonconcepts ntt, names n WHERE tc.tc_id = ntt.tc_id AND ntt.name_id = n.name_id AND n.namestr = blast.Species) WHERE decision = '';")
 	conn.commit()
 	conn.close()

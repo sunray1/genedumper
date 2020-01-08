@@ -4,16 +4,17 @@
 # is in the taxonomy database.
 #
 # Changes are noted in 'ncbi.txt'
-def ncbi(taxdb, blastdb):
+def ncbi(taxdb, blastdb, email):
 	import time, sqlite3, sys
 	from Bio import Entrez
 	num_spe_dic = {}
 	count = 1
+	Entrez.email = email
 	conn = sqlite3.connect(taxdb)
 	c = conn.cursor()
 	c.execute("ATTACH '" + blastdb + "' as 'db'")
 	#make dictionary of species and accession numbers for all records where the nc_id is null
-	for iter in c.execute("SELECT accession, Species FROM blast WHERE tc_id IS NULL;"):
+	for iter in c.execute("SELECT accession, Species FROM blast WHERE tc_id = '0';"):
 		num_spe_dic[str(iter[0])] = str(iter[1])
 	with open('ncbi.txt', 'w') as o:
 		dic_keys = list(num_spe_dic.keys())

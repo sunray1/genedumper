@@ -21,13 +21,12 @@ argp.add_argument('-s', '--steps', help='the steps the program will run \n0 - ru
 argp.add_argument('-t', '--taxdb', help='the name of the taxonomy database')
 argp.add_argument('-c', '--calcstats', help='calculate statistics based on the taxonomy level given, ie Species, Genus')
 argp.add_argument('-f', '--fastain', help='the fasta file that blast will use')
-argp.add_argument('-e', '--email', help='user email used for NCBI', required=True)
 argp.add_argument('-l', '--html', help='calculates an output html file with hero stats ab', action='store_true')
+argp.add_argument('-e', '--email', help='email for NCBI')
 argp.set_defaults(blastdb='blast_results.db', taxdb=False)
 args = argp.parse_args()
 blastdb = args.blastdb
 steps = args.steps
-email = args.email
 
 if len(sys.argv) == 1:
     argp.print_help()
@@ -46,6 +45,9 @@ elif args.taxdb:
     taxdb = args.taxdb
 if not os.path.isfile(blastdb) and '2' not in steps and ('3' in steps or '4' in steps or '5' in steps or '6' in steps):
     sys.exit("Error: no blast sqlite file called " + blastdb)
+if steps and not args.email:
+    if '4' in steps:
+        sys.exit("Error: ncbi needs email -e to run")
     
 #Start running functions
 if steps:
@@ -104,7 +106,7 @@ if steps:
         print("Step 3 complete\n----------------------")
     if '4' in steps:
         print("Running step 4: checking ncbi for names.....\n")
-        ncbi(taxdb, blastdb, email)
+        ncbi(taxdb, blastdb, args.email)
         find_id(taxdb, blastdb)
         print("Step 4 complete, ncbi.txt file contains changes\n----------------------")
     if '5' in steps:

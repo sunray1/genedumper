@@ -19,7 +19,7 @@ def epithet(taxdb, blastdb):
 	c = conn.cursor()
 	conn.text_factory = str
 	c.execute("ATTACH '" + blastdb + "' as 'db'")
-	for iter in c.execute("SELECT Name_num, epithet, genus FROM blast WHERE tc_id IS NULL and epithet != 'sp.' and epithet != 'gen.' and epithet NOT LIKE '%/%';"):
+	for iter in c.execute("SELECT Name_num, epithet, genus FROM blast WHERE tc_id = '0' and epithet != 'sp.' and epithet != 'gen.' and epithet NOT LIKE '%/%';"):
 		taxname = str(iter[2]) + " " + str(iter[1])
 		if taxname in name_num_dic.keys():
 			list1 = list(name_num_dic[taxname])
