@@ -15,25 +15,30 @@ muscle_cline = MuscleCommandline(clwstrict=True)
 
 def resolve_seqs(list_of_GIs, blastdb, gene, c):
     #give a list of GIs, checks the amount DNA/length, returns list of max
-    joined_GIs = ",".join(list_of_GIs)
     amount_DNA = []
     length_DNA = []
+    list_of_accs = []
+    GI_to_pick = []
     iterator = get_seqs_from_sqldb_GI(list_of_GIs, "hseq", blastdb, gene, c)
     for seq_record in iterator:
+        list_of_accs.append(seq_record.id)
         amount_DNA.append(seq_record.seq.count("A")+seq_record.seq.count("T")+seq_record.seq.count("C")+seq_record.seq.count("G"))
-        length_DNA.append(len(seq_record))
-#    print(amount_DNA)
-#    print(length_DNA)
+    for i in list_of_accs:
+        for iter in c.execute("SELECT hit_length FROM blast WHERE accession = '"+ i +"';"):
+            length_DNA.append(int(iter[0]))
     if amount_DNA.count(max(amount_DNA)) == 1:
-        GI_to_pick = [list_of_GIs[amount_DNA.index(max(amount_DNA))]]
+        acc_to_pick = [list_of_accs[amount_DNA.index(max(amount_DNA))]]
     elif length_DNA.count(max(length_DNA)) == 1:
-        GI_to_pick = [list_of_GIs[length_DNA.index(max(length_DNA))]]
+        acc_to_pick = [list_of_accs[length_DNA.index(max(length_DNA))]]
     else:
         try:
             sums = [amount_DNA[i] + length_DNA[i] for i in xrange(len(amount_DNA))] #python2
         except:
             sums = [amount_DNA[i] + length_DNA[i] for i in range(len(amount_DNA))] #python3
-        GI_to_pick = [list_of_GIs[i] for i, x in enumerate(sums) if x == max(sums)]
+        acc_to_pick = [list_of_accs[i] for i, x in enumerate(sums) if x == max(sums)]
+    for i in acc_to_pick:
+        for iter in c.execute("SELECT GI from blast where accession = '"+i+"';"):
+            GI_to_pick.append(str(iter[0]))
     return(GI_to_pick)
 
 def alignment_reg(align_GIs, blastdb, qseqbool, gene, c):
