@@ -2,6 +2,38 @@
 #Script does self blast of those with multiple species/gene hits to make sure the top hit is the rejected hit
 from blastlib.clean_seq_funcs import get_blast_query
 
+
+def first_blast(blastdb):
+    #do self blast and print to file
+    import sqlite3
+    from cleanlib.databasing import get_seqs_from_sqldb, export_fasta, create_blast_db, local_blast
+    genes = set()
+    conn = sqlite3.connect(blastdb)
+    c = conn.cursor()
+    # #get all seqs that have that gene to make db out of
+    for iter in c.execute("SELECT Gene_name from blast GROUP BY Gene_name;"):
+        genes.add(iter[0])
+    for gene in genes:
+        #make query
+        print("Checking " + gene +" sequences")
+        access_list_qseq = set()
+        for iter in c.execute("SELECT accession FROM blast WHERE decision = 'Longest or most info (not checked)/Chosen' and Gene_name = '"+gene+"';"):
+            access_list_qseq.add(str(iter[0]))
+        for iter in c.execute("SELECT accession FROM blast WHERE decision = 'Only or best choice in tiling analysis/chosen'and Gene_name = '"+gene+"';"):
+            access_list_qseq.add(str(iter[0]))
+        iterator = get_seqs_from_sqldb(access_list_qseq, "hseq", blastdb, c)
+        export_fasta(iterator, gene+"_qseqs.fa")
+        #make db and blast
+        if len(access_list_qseq) != 0:
+            access_list = set()
+            for iter in c.execute("SELECT accession FROM blast WHERE Gene_name = '"+ gene +"';"):
+                access_list.add(str(iter[0]))
+            #print(len(access_list))
+            iterator = get_seqs_from_sqldb(access_list, "hseq", blastdb, c)
+            export_fasta(iterator, gene+"_db.fa")
+            create_blast_db(gene+"_db.fa")
+            local_blast(gene+"_db.fa", gene+"_qseqs.fa")
+        
 def test_resolved_seqs(infile, blastdb, taxdb, email):
     ent_query = get_blast_query(taxdb)
     import sqlite3, sys, time
@@ -17,24 +49,6 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
     seqs_to_blast = []
     finalseqs = set()
     multseqs = []
-    
-    
-    #do self blast and print to file
-    with open(infile) as fasta_file:
-        print("Blasting " + infile)
-        records = fasta_file.read()
-    numqueries = records.count('>')
-    # 
-    # #get all seqs that have that gene to make db out of
-    gene = infile.split("_accession_nums")[0]
-    access_list = set()
-    for iter in c.execute("SELECT accession FROM blast WHERE Gene_name = '"+ gene +"';"):
-        access_list.add(str(iter[0]))
-    #print(len(access_list))
-    iterator = get_seqs_from_sqldb(access_list, "hseq", blastdb, c)
-    export_fasta(iterator, gene+"_db.fa")
-    create_blast_db(gene+"_db.fa")
-    local_blast(gene+"_db.fa", infile)
     
     #open self blast file for parsing
     #make dictionary of query species: query GI of those that don't have the top hit as the same species

@@ -2,7 +2,7 @@
 
 import sys, os
 from cleanlib.multiple import resolve_seqs
-from cleanlib.blast_sp_parse import test_resolved_seqs
+from cleanlib.blast_sp_parse import test_resolved_seqs, first_blast
 from cleanlib.getseqsfromGenbank import pullseqs
 from cleanlib.cluster_analysis import cluster
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -41,13 +41,9 @@ taxdb = args.taxdb
 if '0' in steps:
     print('Running initial resolver')
     resolve_seqs(blastdb, email)
-    list_in = [f for f in os.listdir(".") if f.endswith("accession_nums_resolved.txt")]
 
 if '1' in steps:
-    print("Pulling down seqs for blasting")
-    for f in list_in:
-        print("Pulling down " + f)
-        pullseqs(f, email)
+    first_blast(blastdb)
 
 if '2' in steps:
     list_in = [f for f in os.listdir(".") if f.endswith("accession_nums_resolved.fa")]
