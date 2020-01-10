@@ -194,11 +194,11 @@ def resolve_seqs(blastdb, email):
                             c.execute("UPDATE blast SET Decision='Longest or most info (not checked)/Chosen' WHERE GI IN " + GIs_to_pick_str + ";")
                         else:
                             c.execute("UPDATE blast SET Decision='To cluster analysis/Chosen' WHERE GI IN " + GIs_to_pick_str + ";")
-                        # merge ranges - if same number of ranges as original, keep all,
-                        # want the least number to overlap 95% of whole range
-                        # try each comb from low to high and if hits 95%, choose those
-                        # if multiple higher than 95%, choose one with best %
-                        # if multiple with same % and same numb of combs- multiple
+                        #merge ranges - if same number of ranges as original, keep all,
+                        #want the least number to overlap 95% of whole range
+                        #try each comb from low to high and if hits 95%, choose those
+                        #if multiple higher than 95%, choose one with best %
+                        #if multiple with same % and same numb of combs- multiple
                 
     #print(dic)
 

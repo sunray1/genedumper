@@ -124,88 +124,65 @@ def alignment_comp(align_GIs, blastdb, qseqbool, gene, c):
     align = AlignIO.read(StringIO(stdout), "clustal")
     return(align)
 
-def blast_all(blast_list, blast_nums, blast_tcids, c, gene, taxdb, blastdb):
-    hit_levels_return = []
+def blast_all(blast_list, c, gene, taxdb, blastdb):
+    #first do blast of all (so we only do one blast), then get taxonomy for each query, then get taxonomies for top 10 hits
+    hit_levels_return = {}
+    hitdic = {}
+    print("Blasting error sequences (seqs do not align together and the one picked does not blast to other)")
     iterator = get_seqs_from_sqldb_GI(blast_list, "hseq", blastdb, gene, c)
     export_fasta(iterator, "error_seqs.fa")
     local_blast(gene+"_db.fa", "error_seqs.fa")
     with open("error_seqs.fa.xml") as p:
+        count = 0
         print("Parsing blast output")
         blast_records = NCBIXML.parse(p)
         #this iterates in a wierd way - note next at the end - this is due to the structure of ncbi's blast returns
         for rec in blast_records:
+            count += 1
+            print(str(round(float(count)/float(len(blast_list))*100, 2))+ "%")
             #get GI - blast doesnt pull down GI nums anymore
             queryacc = str(rec.query.split()[0])
-            for iter in c.execute("SELECT GI FROM blast WHERE accession = '" + queryacc + "'"):
+            for iter in c.execute("SELECT GI, tc_id FROM blast WHERE accession = '" + queryacc + "'"):
                 rec_GI = str(iter[0])
+                sp_tc_id = str(iter[1])
             #get taxonomy for tc_id
-            rank = ''
-            taxonomy = []
-            sp_tc_id = blast_tcids[rec_GI]
-            while rank != 'Family':
-                for iter in c.execute("SELECT r.namestr, tc.parent_id FROM taxon_concepts tc, ranks r WHERE tc_id = '" + str(sp_tc_id) + "' AND tc.rank_id = r.rank_id"):
-                    rank = iter[0]
-                    sp_tc_id = iter[1]
-                for iter in c.execute("SELECT n.namestr FROM names n, names_to_taxonconcepts ntt WHERE ntt.name_id = n.name_id AND tc_id = '" + str(sp_tc_id) + "'"):
-                    taxonomy.append(str(iter[0]))
+            query_taxonomy = [int(sp_tc_id)]
+            while 0 not in query_taxonomy:
+                for iter in c.execute("SELECT tc.parent_id FROM taxon_concepts tc, ranks r WHERE tc_id = '" + str(sp_tc_id) + "' AND tc.rank_id = r.rank_id"):
+                    sp_tc_id = iter[0]
+                    query_taxonomy.append(sp_tc_id)
             hit_levels_all = []
-            for i in range(blast_nums[rec_GI]):
-                query_acc = rec.query.split()[0]
-    #            print(query_acc)
-                hitdic = {}
-                hitSp = []
-                warning_counts = 0
-                for alignment in rec.alignments:
-                    for hsp in alignment.hsps:
-                        identity=float(hsp.identities)/float(hsp.align_length)
-                    if alignment.hit_def == query_acc:
-                        pass
-                    else:
-                        for iter in c.execute("SELECT GI FROM blast WHERE accession='" + alignment.hit_def + "'"):
-                            hitGI = (str(iter[0]))
-                        hitdic[str(hitGI)] = identity
+            count1 = 0
+            for alignment in rec.alignments:
+                for hsp in alignment.hsps:
+                    identity=float(hsp.identities)/float(hsp.align_length)
+                if alignment.hit_def == queryacc:
+                    pass
+                else:
+                    count1 += 1
+                    for iter in c.execute("SELECT GI FROM blast WHERE accession='" + alignment.hit_def + "'"):
+                        hitGI = (str(iter[0]))
+                    hitdic[str(hitGI)] = identity
+                    if count1 >= 5:
+                        break
+
                 #hitdic is GI: identity of all hits for a query
-                if len(hitdic.values()) > 5:
-                    maxiden = sorted(hitdic.values(), reverse = True)[0:5]
-                else:
-                    maxiden = hitdic.values()
-                try:
-                    hitGIs = [GI for GI, iden in hitdic.iteritems() if iden in maxiden] #python2
-                except:
-                    hitGIs = [GI for GI, iden in hitdic.items() if iden in maxiden] #python3
-                #hitGIs - GIs with the highest identity
-                for hitGI in hitGIs:
-                    prev_len = len(hitSp)
-        #get species for all the top hits for each GI - hitsp
-                    for iter in c.execute("SELECT Species FROM blast WHERE GI='" + hitGI + "'"):
-                        hitSp.append(str(iter[0]))
-                    if len(hitSp) == prev_len:
-                        warning_counts += 1
-                        #print("Warning: " + str(hitGI) + " is a top hit, but is not in the blast database")
-                hit_levels = []
-                if len(hitSp) > 0:
-                    if warning_counts < 2:
-                        for hit_species in hitSp:
-                            hit = -1
-                            for iter in c.execute("SELECT ntt.tc_id FROM names_to_taxonconcepts ntt, names n WHERE n.name_id = ntt.name_id AND namestr='" + hit_species + "'"):
-                                sp_tc_id = iter[0]
-                            while hit == -1:
-                                for iter in c.execute("SELECT r.namestr, tc.parent_id, tc.tc_id FROM taxon_concepts tc, ranks r WHERE tc_id = '" + str(sp_tc_id) + "'AND tc.rank_id = r.rank_id"):
-                                    sp_tc_id = iter[1]
-                                for iter in c.execute("SELECT n.namestr FROM names n, names_to_taxonconcepts ntt WHERE ntt.name_id = n.name_id AND tc_id = '" + str(sp_tc_id) + "'"):
-                                    if str(iter[0]) in taxonomy:
-                                        hit = taxonomy.index(iter[0])
-                                        hit_levels.append(hit)
-                        hit_levels_all.append(min(hit_levels))
-                    else:
-    #                    print('Warning: GI has two or more hits that aren\'t in the database, will ignore')
-                        hit_levels_all.append(1000)
-                else:
-    #                print('Warning: no taxonomy info for current GI\'s hits - will look at other possible GI')
-                    hit_levels_all.append(1000)
-                if i != blast_nums[rec_GI]-1:
-                    rec = next(blast_records)
-            hit_levels_return.append(hit_levels_all)
+                #get species for all the top hits for each GI - hitsp
+                #get a set of all the sp_id for all taxonomies in top 5 hits. Can iterate through query taxonomy and choose closest sp_id then can compare queries
+            all_hits_taxonomy = set()
+            for hitGI in hitdic:
+                for iter in c.execute("SELECT tc_id FROM blast WHERE GI='" + hitGI + "'"):
+                    one_hit_taxonomy = [int(iter[0])]
+                    while 0 not in one_hit_taxonomy:
+                        for iter in c.execute("SELECT tc.parent_id FROM taxon_concepts tc, ranks r WHERE tc_id = '" + str(iter[0]) + "' AND tc.rank_id = r.rank_id"):
+                            sp_tc_id = iter[0]
+                            one_hit_taxonomy.append(sp_tc_id)
+                            all_hits_taxonomy.add(sp_tc_id)
+                #all_hits_taxonomy[hitGI] = one_hit_taxonomy
+            for rank in query_taxonomy:
+                if rank in all_hits_taxonomy:
+                    hit_levels_return[rec_GI] = rank
+                    break
     return(hit_levels_return)
     
     
@@ -289,8 +266,8 @@ def tiling(list_of_GIs_local, gene, blastdb, c):
     idens_local = []
     start_stop_local = []
     for m in list_of_GIs_local:
-        for iter in c.execute("SELECT GI from blast WHERE Gene_name = '"+gene+"' LIMIT 1;"):
-            qseqGI = str(iter[0])
+        for iter in c.execute("SELECT max(hit_length), GI from blast WHERE Gene_name = '"+gene+"'"):
+            qseqGI = str(iter[1])
         GIs_to_align = [qseqGI, m]
         #need to change this
         idens_for_ind = []

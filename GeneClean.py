@@ -46,7 +46,7 @@ if '1' in steps:
     first_blast(blastdb)
 
 if '2' in steps:
-    list_in = [f for f in os.listdir(".") if f.endswith("accession_nums_resolved.fa")]
+    list_in = [f for f in os.listdir(".") if f.endswith("_qseqs.fa.xml")]
     # print(list_in)
     print('Checking resolved sequences')
     for f in list_in:
