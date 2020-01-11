@@ -15,7 +15,6 @@ argp.add_argument('-e', '--email', help='user email used for NCBI')
 argp.set_defaults(blastdb='blast_results.db', taxdb=False)
 args = argp.parse_args()
 blastdb = args.blastdb
-email = args.email
 
 if len(sys.argv) == 1:
     argp.print_help()
@@ -32,6 +31,8 @@ if not args.taxdb:
 elif args.taxdb:
     if not os.path.isfile(args.taxdb):
         sys.exit("Error: no taxonomy file called " + args.taxdb)
+if '4' in steps and not args.email:
+    sys.exit("Error: NCBI needs email -e to pull down sequences")
  
  
 taxdb = args.taxdb
@@ -57,5 +58,6 @@ if '3' in steps:
     cluster(blastdb, taxdb, email)
     
 if '4' in steps:
+    email = args.email
     print("Pulling down final cleaned sequences")
     pullseqs(blastdb, email)

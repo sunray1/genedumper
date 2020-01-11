@@ -3,11 +3,13 @@
 def pullseqs(blastdb, email):
 	from Bio import Entrez, SeqIO
 	import os, sys, time, sqlite3
+	from random import randint
 	from cleanlib.databasing import get_seqs_from_sqldb_GI
 	conn = sqlite3.connect(blastdb)
 	c = conn.cursor()
 	GI_gene_dic = {}
 	mitochloro_gene_dic = {}
+	tc_ids_random = set()
 	genes = set()
 	Entrez.email = email
 # Ambiguous species/not chosen
@@ -36,8 +38,28 @@ def pullseqs(blastdb, email):
 		
 	for gene in genes:
 		#get regular sequences
+		pick_random_dic = {}
 		records = []
+		#get regular
+		
 		seqids = [i for i in GI_gene_dic if GI_gene_dic[i] == gene]
+		
+		#choose random
+		for iter in c.execute("SELECT tc_id, GI FROM blast WHERE Decision IN ('Pick one randomly/Chosen') AND Gene_name = '"+gene+"' ORDER BY tc_id"):
+			if iter[0] not in pick_random_dic:
+				pick_random_dic[iter[0]] = [iter[1]]
+			else:
+				output = pick_random_dic[iter[0]]
+				output.append(iter[1])
+				pick_random_dic[iter[0]] = output
+		
+		for i in pick_random_dic:
+			choice = randint(0, len(pick_random_dic[i])-1)
+			GI_choice = pick_random_dic[i][choice]
+			seqids.append(str(GI_choice))
+			
+			
+		#pull the seqs
 		seqlists = [seqids[i:i+200] for i in range(0, len(seqids), 200)]
 		for i in seqlists:
 			error = False
@@ -56,11 +78,14 @@ def pullseqs(blastdb, email):
 					pass
 			for seq_record in SeqIO.parse(handle, "fasta"):
 				records.append(seq_record)
-				
+		#get mito/chloro		
 		GI_mito_GI = [i for i in mitochloro_gene_dic if mitochloro_gene_dic[i] == gene]
-		iterator = get_seqs_from_sqldb_GI(GI_mito_GI, "hseq", blastdb, gene, c)
-		for seq in iterator:
-			records.append(seq)
+		if len(GI_mito_GI) != 0:
+			iterator = get_seqs_from_sqldb_GI(GI_mito_GI, "hseq", blastdb, gene, c)
+			for seq in iterator:
+				records.append(seq)
+		
+			
 		# print(str(round((float(len(records))/float(len(seqids)))*100, 2)) + "%")
 
 
