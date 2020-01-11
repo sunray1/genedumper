@@ -123,9 +123,10 @@ def test_resolved_seqs(infile, blastdb, taxdb, email):
                     #if species of query not in the list of hit species
 #################will rewrite over if multiple genes per querysp######################
 ####################can't align all together if they align to different parts####################
+###maybe we can do something with decison####
                     if querySp not in hitSp:
                         c.execute("UPDATE blast SET decision='Chosen, but does not reciprocal blast' WHERE GI='" + queryGI + "';")
-                        error_dic[querySp] = [queryGI]
+                        error_dic[querySp] = queryGI
                         
                     else:
                         c.execute("UPDATE blast SET decision='Longest or most info, good top hit/chosen' WHERE GI='" + queryGI + "';")

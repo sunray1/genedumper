@@ -43,9 +43,6 @@ def resolve_seqs(blastdb, email):
     for i in mito:
         GI_nums_single.remove(i)
         GI_mito_GI.append(re.split('_|\|', i)[-2])   
-    iterator = get_seqs_from_sqldb_GI_no_gene(GI_mito_GI, "hseq", blastdb, c)
-    for seq in iterator:
-        records.append(seq)
     GI_mito_GI_str = str(GI_mito_GI).replace("[", "(").replace("]", ")")    
     c.execute("UPDATE blast SET Decision='Mito or chloro sequence/Chosen' WHERE GI IN " + GI_mito_GI_str + ";")
     #write singletons to file
@@ -77,9 +74,6 @@ def resolve_seqs(blastdb, email):
         if len(mito) > 0:
             #will pick the first one if there are multiple ones
             mitoinGI = [mito[0].split("_")[0]]
-            iterator = get_seqs_from_sqldb_GI_no_gene(mitoinGI, "hseq", blastdb, c)
-            for seq in iterator:
-                records.append(seq)
             c.execute("UPDATE blast SET Decision='Mito or chloro sequence/Chosen' WHERE GI='" + mitoinGI[0] + "';")
             GIS_not_picked_mito = list(set([x.split('_')[0] for x in individual])-set([mitoinGI[0]]))
             if len(GIS_not_picked_mito) != 0:

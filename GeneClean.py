@@ -53,11 +53,9 @@ if '2' in steps:
         test_resolved_seqs(f, blastdb, taxdb, email)
         
 if '3' in steps:
-    if os.path.getsize("multiple_gene_choices.txt") > 0:
-        print('Running cluster analysis for unresolved choices')
-        cluster(blastdb, taxdb, email)
-    else:
-        os.remove("multiple_gene_choices.txt")
+    print('Running cluster analysis for unresolved choices')
+    cluster(blastdb, taxdb, email)
+    
 if '4' in steps:
     print("Pulling down final cleaned sequences")
-    pullseqs("final_GIs.txt", email)
+    pullseqs(blastdb, email)
