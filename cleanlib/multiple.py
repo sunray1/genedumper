@@ -2,14 +2,13 @@
 #script designed to use blast.db and get accession numbers to pull down.
 #This pulls down those with only one choice and pulls longest for those with multiple
 
-def resolve_seqs(blastdb, email):
+def resolve_seqs(blastdb):
     import os, sys, sqlite3, re, time, itertools
     from Bio import Seq, Entrez, SeqIO
     from blastlib.clean_seq_funcs import resolve_seqs, alignment_reg, alignment_comp, alignment_rev_comp, identity_calc, tiling
     from cleanlib.databasing import get_seqs_from_sqldb_GI, get_seqs_from_sqldb_GI_no_gene
     conn = sqlite3.connect(blastdb)
     c = conn.cursor()
-    Entrez.email = email
     GI_nums_all = set()
     GI_nums_single = set()
     GI_nums_single_GI = []
@@ -20,7 +19,6 @@ def resolve_seqs(blastdb, email):
     dic_single = {}
     dic_mult = {}
     count2 = 1
-    records = []
     GI_mito_GI = []
     for iter in c.execute("SELECT Gene_name from blast GROUP BY Gene_name;"):
         genes.add(iter[0]) 
@@ -171,23 +169,28 @@ def resolve_seqs(blastdb, email):
                     GIS_not_picked_tiling_str = str(GIS_not_picked_tiling).replace("[", "(").replace("]", ")")
                     c.execute("UPDATE blast SET Decision='Better tiling/Not chosen' WHERE GI IN " + GIS_not_picked_tiling_str + ";")
 
-                count = 0
+                count = 1
                 chosen_GIs = []
                 for m in possible_GIs:
                     if len(m) == 1:
                         c.execute("UPDATE blast SET Decision='Only or best choice in tiling analysis/chosen' WHERE GI='" + m[0] + "';")
                     else:
                         GIs_to_pick = resolve_seqs(m, blastdb, gene, c)
-                        GIS_not_picked = list(set(m)-set(GIs_to_pick))
-                        chosen_GIs.append(GIs_to_pick)
-                        if len(GIS_not_picked) != 0:
-                            GI_not_picked_str = str(GIS_not_picked).replace("[", "(").replace("]", ")")
-                            c.execute("UPDATE blast SET Decision='Short or less info/Not chosen' WHERE GI IN " + GI_not_picked_str + ";")
                         GIs_to_pick_str = str(GIs_to_pick).replace("[", "(").replace("]", ")")
                         if len(GIs_to_pick) == 1:
-                            c.execute("UPDATE blast SET Decision='Longest or most info (not checked)/Chosen' WHERE GI IN " + GIs_to_pick_str + ";")
+                            c.execute("UPDATE blast SET Decision='Longest or most info (not checked), tile "+str(count)+" /Chosen' WHERE GI IN " + GIs_to_pick_str + ";")
+                            GIS_not_picked = list(set(m)-set(GIs_to_pick))
+                            chosen_GIs.append(GIs_to_pick)
+                            GI_not_picked_str = str(GIS_not_picked).replace("[", "(").replace("]", ")")
+                            c.execute("UPDATE blast SET Decision='Short or less info, tile "+str(count)+"/Not chosen' WHERE GI IN " + GI_not_picked_str + ";")
+                            count += 1
                         else:
                             c.execute("UPDATE blast SET Decision='To cluster analysis/Chosen' WHERE GI IN " + GIs_to_pick_str + ";")
+                            GIS_not_picked = list(set(m)-set(GIs_to_pick))
+                            chosen_GIs.append(GIs_to_pick)
+                            if len(GIS_not_picked) != 0:
+                                GI_not_picked_str = str(GIS_not_picked).replace("[", "(").replace("]", ")")
+                                c.execute("UPDATE blast SET Decision='Short or less info/Not chosen' WHERE GI IN " + GI_not_picked_str + ";")
                         #merge ranges - if same number of ranges as original, keep all,
                         #want the least number to overlap 95% of whole range
                         #try each comb from low to high and if hits 95%, choose those
@@ -196,6 +199,5 @@ def resolve_seqs(blastdb, email):
                 
     #print(dic)
 
-    SeqIO.write(records, "fulllength.fa", "fasta")
     conn.commit()
     conn.close()

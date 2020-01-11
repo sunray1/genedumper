@@ -27,7 +27,7 @@ def pullseqs(blastdb, email):
 # Species not in taxonomy/not chosen
 # To cluster analysis/Chosen
 	
-	for iter in c.execute("SELECT GI, Gene_name FROM blast WHERE Decision IN ('Closest to consensus in cluster analysis/Chosen', 'Longest or most info, good top hit/chosen', 'Only choice/chosen', 'Sequence did not have same top blast species, but all aligned correctly/Chosen')"):
+	for iter in c.execute("SELECT GI, Gene_name FROM blast WHERE Decision IN ('Closest to consensus in cluster analysis/Chosen', 'Longest or most info, good top hit/chosen', 'Only choice/chosen') OR Decision LIKE 'Sequence did not have same top blast species, but all aligned correctly%"):
 		GI_gene_dic[str(iter[0])] = iter[1]
 		genes.add(iter[1])
 	

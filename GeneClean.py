@@ -41,7 +41,7 @@ taxdb = args.taxdb
 
 if '0' in steps:
     print('Running initial resolver')
-    resolve_seqs(blastdb, email)
+    resolve_seqs(blastdb)
 
 if '1' in steps:
     first_blast(blastdb)
@@ -51,7 +51,7 @@ if '2' in steps:
     # print(list_in)
     print('Checking resolved sequences')
     for f in list_in:
-        test_resolved_seqs(f, blastdb, taxdb, email)
+        test_resolved_seqs(f, blastdb, taxdb)
         
 if '3' in steps:
     print('Running cluster analysis for unresolved choices')
