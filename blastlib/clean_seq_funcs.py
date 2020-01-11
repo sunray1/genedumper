@@ -266,7 +266,7 @@ def tiling(list_of_GIs_local, gene, blastdb, c):
     idens_local = []
     start_stop_local = []
     for m in list_of_GIs_local:
-        for iter in c.execute("SELECT max(hit_length), GI from blast WHERE Gene_name = '"+gene+"'"):
+        for iter in c.execute("SELECT max(qcov), GI from blast WHERE Gene_name = '"+gene+"'"):
             qseqGI = str(iter[1])
         GIs_to_align = [qseqGI, m]
         #need to change this

@@ -12,22 +12,22 @@ def pullseqs(blastdb, email):
 	tc_ids_random = set()
 	genes = set()
 	Entrez.email = email
+
 # Ambiguous species/not chosen
 # Better tiling/Not chosen
-# Chosen, but does not reciprocal blast
-# Chosen, but does not reciprocal blast and all do not align
 # Closest to consensus in cluster analysis/Chosen
 # Further from consensus in cluster analysis/Not chosen
 # Longest or most info, good top hit/chosen
 # Mito or chloro sequence/Chosen
 # Only choice/chosen
+# Only or best choice in tiling analysis/chosen
 # Pick one randomly/Chosen
-# Sequence did not have same top blast species, but all aligned correctly/Chosen
+# Sequence did not have same top blast species, but all aligned correctly, tile 1/Chosen
+# Short or less info, tile 1/Not chosen
 # Short or less info/Not chosen
 # Species not in taxonomy/not chosen
-# To cluster analysis/Chosen
 	
-	for iter in c.execute("SELECT GI, Gene_name FROM blast WHERE Decision IN ('Closest to consensus in cluster analysis/Chosen', 'Longest or most info, good top hit/chosen', 'Only choice/chosen') OR Decision LIKE 'Sequence did not have same top blast species, but all aligned correctly%"):
+	for iter in c.execute("SELECT GI, Gene_name FROM blast WHERE Decision IN ('Closest to consensus in cluster analysis/Chosen', 'Longest or most info, good top hit/chosen', 'Only choice/chosen', 'Only or best choice in tiling analysis/chosen') OR Decision LIKE 'Sequence did not have same top blast species, but all aligned correctly%'"):
 		GI_gene_dic[str(iter[0])] = iter[1]
 		genes.add(iter[1])
 	

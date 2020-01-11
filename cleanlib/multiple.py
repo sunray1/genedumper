@@ -43,7 +43,7 @@ def resolve_seqs(blastdb):
         GI_mito_GI.append(re.split('_|\|', i)[-2])   
     GI_mito_GI_str = str(GI_mito_GI).replace("[", "(").replace("]", ")")    
     c.execute("UPDATE blast SET Decision='Mito or chloro sequence/Chosen' WHERE GI IN " + GI_mito_GI_str + ";")
-    #write singletons to file
+    #write singletons
     for i in GI_nums_single:
         GI_nums_single_GIs.append(re.split('_|\|', i)[-2])
     GI_nums_single_GIs_str = str(GI_nums_single_GIs).replace("[", "(").replace("]", ")")
@@ -73,6 +73,11 @@ def resolve_seqs(blastdb):
             #will pick the first one if there are multiple ones
             mitoinGI = [mito[0].split("_")[0]]
             c.execute("UPDATE blast SET Decision='Mito or chloro sequence/Chosen' WHERE GI='" + mitoinGI[0] + "';")
+            GIS_not_picked_mito = list(set([x.split("_")[0] for x in mito])-set([mitoinGI[0]]))
+            if len(GIS_not_picked_mito) != 0:
+                GIS_not_picked_mito_str = str(GIS_not_picked_mito).replace("[", "(").replace("]", ")")
+                c.execute("UPDATE blast SET Decision='Mito or chloro sequence/Randomly not chosen' WHERE GI IN " + GIS_not_picked_mito_str + ";")
+                
             GIS_not_picked_mito = list(set([x.split('_')[0] for x in individual])-set([mitoinGI[0]]))
             if len(GIS_not_picked_mito) != 0:
                 GIS_not_picked_mito_str = str(GIS_not_picked_mito).replace("[", "(").replace("]", ")")

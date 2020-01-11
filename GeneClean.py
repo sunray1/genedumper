@@ -55,7 +55,7 @@ if '2' in steps:
         
 if '3' in steps:
     print('Running cluster analysis for unresolved choices')
-    cluster(blastdb, taxdb, email)
+    cluster(blastdb, taxdb)
     
 if '4' in steps:
     email = args.email

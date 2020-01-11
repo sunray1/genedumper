@@ -147,7 +147,7 @@ def test_resolved_seqs(infile, blastdb, taxdb):
             for iter in c.execute("SELECT Gene_name, Decision FROM blast WHERE GI ='" + tile + "'"):
                 gene = str(iter[0])
                 tilenum = str(iter[1].split()[7])    
-            for iter in c.execute("SELECT GI FROM blast WHERE Decision = 'Short or less info, tile "+tilenum+"/Not chosen' and tc_id = '"+tc_id+"'"):
+            for iter in c.execute("SELECT GI FROM blast WHERE Decision = 'Short or less info, tile "+tilenum+"/Not chosen' and tc_id = '"+tc_id+"' and Gene_name = '"+gene+"'"):
                 list_of_GIs.append(str(iter[0]))
             #first is always querygi
             first_GI = list_of_GIs[0]
