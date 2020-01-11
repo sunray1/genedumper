@@ -254,7 +254,7 @@ class CSVTaxonomyParser:
                         namestr = row[ranktoCSV[rankid]].strip()
                         if (rankid == sp_rankid) and parse_subsp:
                             namestr = self._extractSpecies(namestr)
-                 except KeyError as e:
+                except KeyError as e:
                      raise TaxoCSVError('The column "' + e.args[0] + '" was not found in the taxonomy CSV file.')
 
                 if namestr != '':
