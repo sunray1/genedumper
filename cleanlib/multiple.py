@@ -168,7 +168,10 @@ def resolve_seqs(blastdb):
                     for x, comb_frag in enumerate(sorted(combination)):
                         if comb_frag[1] - comb_frag[0] + 1 > final_tiling[x][1] - final_tiling[x][0] + 1:
                             final_tiling[x] = comb_frag
-                possible_GIs = [ranges[x] for x in final_tiling]
+                if (0, 0) in final_tiling:
+                    possible_GIs = []
+                else:
+                    possible_GIs = [ranges[x] for x in final_tiling]
                 GIS_not_picked_tiling = list(set([x.split('_')[0] for x in individual])-set([GI for GI_tiles in possible_GIs for GI in GI_tiles]))
                 if len(GIS_not_picked_tiling) != 0:
                     GIS_not_picked_tiling_str = str(GIS_not_picked_tiling).replace("[", "(").replace("]", ")")
