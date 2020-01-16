@@ -46,7 +46,7 @@ def get_stats(taxonomy, blastfile, level):
 				for n in iddic[n]:
 					genedic[n] = 1
 		with open(level + "_stats.csv", "a") as o:
-			o.write("\n" + ranks[tc_id.index(i)] + ",")
+			o.write("\n" + str(ranks[tc_id.index(i)]).lstrip("b") + ",")
 			for i in sorted(genedic):
 				o.write(str(genedic[i]) + ",")
 			o.write(str(sum(genedic.values())))
