@@ -97,6 +97,8 @@ $ python load_taxonomy.py -l none -d empty.db example.conf
 ```
 It uses libraries found in the taxolib folder and should be run in the same location as this folder. This will load your data from your .csv file (location noted in .conf file) into empty.db. This database will be used in subsequent steps as the main taxonomy.
 
+If you are using Excel to edit or view your .csv file, make sure to save as CSV (comma delimited) .csv otherwise excel will add hidden characters to your file and become unreadable. ie if you get an error saying a certain column is not found in your .csv file when it is there, this is what is happening.
+
 ### Initial BLAST and SQL database formation (GeneDump)
 
 The script to run the intial BLAST and put results into a SLQ database is called run_scripts.py. It uses libraries in the blastlib folder and should be run in the same location as this folder. It runs certain steps based on user input. -b is the name of the outputted BLAST sequence SQL database, while -t is the inputted taxonomy database made in the step above. 
