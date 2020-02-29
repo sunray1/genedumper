@@ -90,7 +90,7 @@ def cluster(blastdb, taxdb):
                 c.execute("UPDATE blast SET Decision='Pick one randomly/Chosen' WHERE GI IN " + GI_to_pick_str + ";")
                 GIS_not_picked = list(set(multiple_dic[i])-set(GI_to_pick))
                 GIS_not_picked_str = str(GIS_not_picked).replace("[", "(").replace("]", ")")
-                c.execute("UPDATE blast SET Decision='Further from consensus in cluster analysis/Not chosen' WHERE GI IN " + GIS_not_picked_str + ";") 
+                c.execute("UPDATE blast SET Decision='Pick one randomly/Not chosen' WHERE GI IN " + GIS_not_picked_str + ";") 
                 
         for i in two_dic:
             twodic_str = str(two_dic[i]).replace("[", "(").replace("]", ")")
