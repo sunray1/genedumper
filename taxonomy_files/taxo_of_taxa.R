@@ -10,7 +10,7 @@ Sys.setenv(ENTREZ_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 csvlist <- "xxxxxxxxxxxxxx"
 divisionfilter <- "xxxxxxxxxxxx"
 #automatically gets genus and species, don't add
-ranks <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Subgenus")
+ranks <- c("Kingdom", "Phylum", "Class", "Order", "Family")
 
 simpleCap <- function(x) {
   s <- strsplit(x, " ")[[1]]
