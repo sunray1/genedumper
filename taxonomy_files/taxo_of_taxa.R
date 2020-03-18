@@ -26,7 +26,7 @@ csvlist_split <- str_split_fixed(sp_list, " ", 2)
 colnames(csvlist_split) <- c("Genus", "Epithet")
 genera <- unique(csvlist_split[,1])
 
-if ('Subgenus' %in% ranks || 'subgenus' %in% ranks){
+if ('Subgenus' %in% ranks){
   class_test <- tax_name(query = sp_list, get = c(ranks,"Genus"), db = "ncbi", rank_filter = "species", division_filter = divisionfilter)
   taxa_merge <- merge(csvlist_split, class_test, by.x="Genus", by.y="Genus")
   final_tax <- cbind(taxa_merge[,5:ncol(class_test)], taxa_merge[,1], taxa_merge[,ncol(class_test)+1], paste(taxa_merge[,1], taxa_merge[,2], sep = " "), stringsAsFactors = FALSE)
