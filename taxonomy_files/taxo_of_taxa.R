@@ -10,7 +10,7 @@ csvlist <- "xxxxxx"
 ranks <- c("Kingdom", "Phylum", "Class", "Order", "Family")
 
 
-sp_out <- downstream(csvlist, downto = "Species", db = "ncbi", ambiguous=TRUE)
+sp_out <- downstream(csvlist, downto = "Species", db = "ncbi", ambiguous_nodes=TRUE, ambiguous_species=FALSE)
 sp_list <- sp_out[[1]]$childtaxa_name
 csvlist_split <- str_split_fixed(sp_list, " ", 2)
 genera <- unique(csvlist_split[,1])
