@@ -14,8 +14,8 @@ cd $USER
 2. Load modules
 
 ```sh
-module load python3
 module load git muscle R
+module load python3
 ```
 
 3. Download GeneDumper
