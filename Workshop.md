@@ -14,7 +14,7 @@ cd $USER
 2. Load modules
 
 ```sh
-module load git muscle R
+module load git muscle R ncbi_blast
 module load python3
 ```
 
