@@ -15,7 +15,7 @@ cd $USER
 
 ```sh
 module load git muscle R ncbi_blast
-module load python3
+module load python/3.6.5
 ```
 
 3. Download GeneDumper
