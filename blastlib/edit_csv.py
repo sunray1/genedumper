@@ -124,7 +124,10 @@ def pull_names(defstr, accession, origGI, taxdb):
 				break
 			else:
 				#print("3")
-				species = defin[0] + " " + defin[1]
+				try:
+					species = defin[0] + " " + defin[1]
+				except:
+					species = defin[0]
 				species = species.replace("\"", "")
 				species = species.replace("'", "")
 				species = species.replace("(", "")
